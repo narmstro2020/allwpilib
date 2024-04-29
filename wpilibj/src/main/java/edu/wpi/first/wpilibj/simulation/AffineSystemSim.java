@@ -9,33 +9,26 @@ import edu.wpi.first.math.Num;
 import edu.wpi.first.math.StateSpaceUtil;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.system.AffineSystem;
-import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.wpilibj.RobotController;
 import org.ejml.MatrixDimensionException;
 import org.ejml.simple.SimpleMatrix;
 
 /**
- * This class helps simulate linear systems. To use this class, do the following
- * in the {@link
+ * This class helps simulate affine systems. To use this class, do the following in the {@link
  * edu.wpi.first.wpilibj.IterativeRobotBase#simulationPeriodic} method.
  *
- * <p>
- * Call {@link #setInput(double...)} with the inputs to the system (usually
- * voltage).
+ * <p>Call {@link #setInput(double...)} with the inputs to the system (usually voltage).
  *
- * <p>
- * Call {@link #update} to update the simulation.
+ * <p>Call {@link #update} to update the simulation.
  *
- * <p>
- * Set simulated sensor readings with the simulated positions in
- * {@link #getOutput()}
+ * <p>Set simulated sensor readings with the simulated positions in {@link #getOutput()}
  *
- * @param <States>  Number of states of the system.
- * @param <Inputs>  Number of inputs to the system.
+ * @param <States> Number of states of the system.
+ * @param <Inputs> Number of inputs to the system.
  * @param <Outputs> Number of outputs of the system.
  */
 public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs extends Num> {
-  /** The plant that represents the linear system. */
+  /** The plant that represents the affine system. */
   protected final AffineSystem<States, Inputs, Outputs> m_plant;
 
   /** State vector. */
@@ -47,60 +40,44 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
   /** Output vector. */
   protected Matrix<Outputs, N1> m_y;
 
-  /**
-   * The standard deviations of measurements, used for adding noise to the
-   * measurements.
-   */
+  /** The standard deviations of measurements, used for adding noise to the measurements. */
   protected final Matrix<Outputs, N1> m_measurementStdDevs;
 
   /**
-   * Creates a simulated generic linear system.
+   * Creates a simulated generic affine system.
    *
-   * @param system   The system to simulate.
-   * @param constant The constant matrix of the affine system.
-   * @throws IllegalArgumentException if any matrix element isn't finite.
+   * @param system The system to simulate.
    */
-  public AffineSystemSim(LinearSystem<States, Inputs, Outputs> system,
-      Matrix<States, N1> constant) {
-    this(system, constant, null);
+  public AffineSystemSim(AffineSystem<States, Inputs, Outputs> system) {
+    this(system, null);
   }
 
   /**
-   * Creates a simulated generic linear system with measurement noise.
+   * Creates a simulated generic affine system with measurement noise.
    *
-   * @param system             The system being controlled.
-   * @param measurementStdDevs Standard deviations of measurements. Can be null if
-   *                           no noise is
-   *                           desired.
-   * @param constant           The constant matrix of the affine system.
-   * @throws IllegalArgumentException if any matrix element isn't finite.
+   * @param system The system being controlled.
+   * @param measurementStdDevs Standard deviations of measurements. Can be null if no noise is
+   *     desired.
    */
   public AffineSystemSim(
-      LinearSystem<States, Inputs, Outputs> system,
-      Matrix<States, N1> constant,
-      Matrix<Outputs, N1> measurementStdDevs) {
-    this.m_plant = new AffineSystem<>(
-        system.getA(),
-        system.getB(),
-        system.getC(),
-        system.getD(),
-        constant);
+    AffineSystem<States, Inputs, Outputs> system, Matrix<Outputs, N1> measurementStdDevs) {
+    this.m_plant = system;
     this.m_measurementStdDevs = measurementStdDevs;
 
     m_x = new Matrix<>(new SimpleMatrix(system.getA().getNumRows(), 1));
     m_u = new Matrix<>(new SimpleMatrix(system.getB().getNumCols(), 1));
     m_y = new Matrix<>(new SimpleMatrix(system.getC().getNumRows(), 1));
-
   }
 
   /**
    * Updates the simulation.
    *
+   * @param c The constant matrix of the affine system.
    * @param dtSeconds The time between updates.
    */
-  public void update(double dtSeconds) {
-    // Update X. By default, this is the linear system dynamics X = Ax + Bu
-    m_x = updateX(m_x, m_u, dtSeconds);
+  public void update(Matrix<States, N1> c, double dtSeconds) {
+    // Update X. By default, this is the affine system dynamics X = Ax + Bu + c
+    m_x = updateX(m_x, m_u, c, dtSeconds);
 
     // y = cx + du
     m_y = m_plant.calculateY(m_x, m_u);
@@ -142,7 +119,7 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
   /**
    * Sets the system inputs.
    *
-   * @param row   The row in the input matrix to set.
+   * @param row The row in the input matrix to set.
    * @param value The value to set the row to.
    */
   public void setInput(int row, double value) {
@@ -193,8 +170,7 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
   }
 
   /**
-   * Returns the current drawn by this simulated system. Override this method to
-   * add a custom
+   * Returns the current drawn by this simulated system. Override this method to add a custom
    * current calculation.
    *
    * @return The current drawn by this simulated mechanism.
@@ -207,18 +183,18 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
    * Updates the state estimate of the system.
    *
    * @param currentXhat The current state estimate.
-   * @param u           The system inputs (usually voltage).
-   * @param dtSeconds   The time difference between controller updates.
+   * @param u The system inputs (usually voltage).
+   * @param c The constant matrix of the affine system.
+   * @param dtSeconds The time difference between controller updates.
    * @return The new state.
    */
   protected Matrix<States, N1> updateX(
-      Matrix<States, N1> currentXhat, Matrix<Inputs, N1> u, double dtSeconds) {
-    return m_plant.calculateX(currentXhat, u, dtSeconds);
+      Matrix<States, N1> currentXhat, Matrix<Inputs, N1> u, Matrix<States, N1> c, double dtSeconds) {
+    return m_plant.calculateX(currentXhat, u, c, dtSeconds);
   }
 
   /**
-   * Clamp the input vector such that no element exceeds the given voltage. If any
-   * does, the
+   * Clamp the input vector such that no element exceeds the given voltage. If any does, the
    * relative magnitudes of the input will be maintained.
    *
    * @param u The input vector.
