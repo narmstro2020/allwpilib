@@ -157,6 +157,25 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
   }
 
   /**
+   * Returns the current input of the plant.
+   *
+   * @return The current input of the plant.
+   */
+  public Matrix<Inputs, N1> getInput() {
+    return m_u;
+  }
+
+  /**
+   * Returns an element of the current input of the plant.
+   *
+   * @param row The row to return.
+   * @return An element of the current input of the plant.
+   */
+  public double getInput(int row) {
+    return m_u.get(row, 0);
+  }
+
+  /**
    * Sets the constant vector.
    *
    * @param c The constant vector.
@@ -195,25 +214,6 @@ public class AffineSystemSim<States extends Num, Inputs extends Num, Outputs ext
    */
   public double getc(int row) {
     return m_c.get(row, 0);
-  }
-
-  /**
-   * Returns the current input of the plant.
-   *
-   * @return The current input of the plant.
-   */
-  public Matrix<Inputs, N1> getInput() {
-    return m_u;
-  }
-
-  /**
-   * Returns an element of the current input of the plant.
-   *
-   * @param row The row to return.
-   * @return An element of the current input of the plant.
-   */
-  public double getInput(int row) {
-    return m_u.get(row, 0);
   }
 
   /**
