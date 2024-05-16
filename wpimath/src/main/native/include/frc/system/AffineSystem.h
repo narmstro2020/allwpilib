@@ -27,7 +27,8 @@ namespace frc {
  * For more on the underlying math, read
  * https://file.tavsys.net/control/controls-engineering-in-frc.pdf.
  * 
- * The system modeled if of the form Ax + Bu + c where c is allowed to be dynamic.
+ * The system modeled of the form Ax + Bu + c where c is allowed to be
+ * dynamic.
  *
  * @tparam States Number of states.
  * @tparam Inputs Number of inputs.
@@ -39,7 +40,7 @@ class AffineSystem {
   using StateVector = Vectord<States>;
   using InputVector = Vectord<Inputs>;
   using OutputVector = Vectord<Outputs>;
-  using ConstantVector = Vectord<Outputs>
+  using ConstantVector = Vectord<Outputs>;
 
   /**
    * Constructs a new AffineSystem from a LinearSystem component.
