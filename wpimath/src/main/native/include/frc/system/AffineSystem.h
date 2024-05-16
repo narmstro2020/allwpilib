@@ -26,7 +26,6 @@ namespace frc {
  *
  * For more on the underlying math, read
  * https://file.tavsys.net/control/controls-engineering-in-frc.pdf.
- * 
  * The system modeled of the form Ax + Bu + c where c is allowed to be
  * dynamic.
  *
@@ -47,19 +46,19 @@ class AffineSystem {
    *
    * @param linearSystemComponent The linear system component.
    */
-  LinearSystem(const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
+  AffineSystem(const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
     m_linearSystemComponent = linearSystemComponent
   }
 
-  LinearSystem(const LinearSystem&) = default;
-  LinearSystem& operator=(const LinearSystem&) = default;
-  LinearSystem(LinearSystem&&) = default;
-  LinearSystem& operator=(LinearSystem&&) = default;
+  AffineSystem(const LinearSystem&) = default;
+  AffineSystem& operator=(const LinearSystem&) = default;
+  AffineSystem(LinearSystem&&) = default;
+  AffineSystem& operator=(LinearSystem&&) = default;
 
   /**
    * Returns the system matrix A.
    */
-  const LinearSystem<States, Inputs, Outputs>& GetLinearSystemComponent() const { return m_linearSystemComponent; }
+  const AffineSystem<States, Inputs, Outputs>& GetLinearSystemComponent() const { return m_linearSystemComponent; }
 
   /**
    * Computes the new x given the old x and the control input.
