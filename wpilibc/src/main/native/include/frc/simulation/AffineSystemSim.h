@@ -112,7 +112,7 @@ class AffineSystemSim {
    */
   double GetInput(int row) const { return m_u(row); }
 
-    /**
+  /**
    * Sets the constant vector.
    *
    * @param c The constant vector.
