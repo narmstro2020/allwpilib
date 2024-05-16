@@ -47,9 +47,8 @@ class AffineSystem {
    * @param linearSystemComponent The linear system component.
    */
   AffineSystem(
-    const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
-    m_linearSystemComponent = linearSystemComponent
-  }
+    const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent){
+    m_linearSystemComponent = linearSystemComponent}
 
   AffineSystem(const LinearSystem&) = default;
   AffineSystem& operator=(const LinearSystem&) = default;
@@ -59,9 +58,9 @@ class AffineSystem {
   /**
    * Returns the system matrix A.
    */
-  const AffineSystem<States, Inputs, Outputs>& GetLinearSystemComponent() 
-      const { 
-    return m_linearSystemComponent; 
+  const AffineSystem<States, Inputs, Outputs>& GetLinearSystemComponent()
+      const {
+    return m_linearSystemComponent;
   }
 
   /**
@@ -81,7 +80,7 @@ class AffineSystem {
     Matrixd<States, Inputs> discB;
     DiscretizeAB<States, Inputs>(m_A, m_B, dt, &discA, &discB);
 
-    return discA * x + 
+    return discA * x +
            discB * (clampedU + m_linearSystemComponent.B().Solve(c));
   }
 
