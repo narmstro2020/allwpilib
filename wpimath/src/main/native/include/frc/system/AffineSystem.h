@@ -46,7 +46,8 @@ class AffineSystem {
    *
    * @param linearSystemComponent The linear system component.
    */
-  AffineSystem(const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
+  AffineSystem(
+    const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
     m_linearSystemComponent = linearSystemComponent
   }
 
@@ -58,7 +59,10 @@ class AffineSystem {
   /**
    * Returns the system matrix A.
    */
-  const AffineSystem<States, Inputs, Outputs>& GetLinearSystemComponent() const { return m_linearSystemComponent; }
+  const AffineSystem<States, Inputs, Outputs>& GetLinearSystemComponent() 
+      const { 
+    return m_linearSystemComponent; 
+  }
 
   /**
    * Computes the new x given the old x and the control input.
@@ -72,12 +76,13 @@ class AffineSystem {
    * @param dt       Timestep for model update.
    */
   StateVector CalculateX(const StateVector& x, const InputVector& clampedU,
-                        const ConstantVector c, units::second_t dt) const {
+                         const ConstantVector c, units::second_t dt) const {
     Matrixd<States, States> discA;
     Matrixd<States, Inputs> discB;
     DiscretizeAB<States, Inputs>(m_A, m_B, dt, &discA, &discB);
 
-    return discA * x + discB * (clampedU + m_linearSystemComponent.B().Solve(c));
+    return discA * x + 
+           discB * (clampedU + m_linearSystemComponent.B().Solve(c));
   }
 
   /**
@@ -91,7 +96,8 @@ class AffineSystem {
    */
   OutputVector CalculateY(const StateVector& x,
                           const InputVector& clampedU) const {
-    return m_linearSystemComponent.C() * x + m_linearSystemComponent.D() * clampedU;
+    return m_linearSystemComponent.C() * x +
+           m_linearSystemComponent.D() * clampedU;
   }
 
  private:
