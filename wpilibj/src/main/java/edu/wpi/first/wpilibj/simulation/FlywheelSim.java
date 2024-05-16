@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.system.AffineSystem;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -19,9 +20,15 @@ import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.RobotController;
 
 /** Represents a simulated flywheel mechanism. */
-public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
+public class FlywheelSim extends AffineSystemSim<N1, N1, N1> {
   // Gearbox for the flywheel.
   private final DCMotor m_gearbox;
+
+  // The voltage needed to overcome static friction.
+  private final double m_kS;
+
+  // The acceleration gain of the system.
+  private final double m_kA;
 
   // The gearing from the motors to the output.
   private final double m_gearing;
@@ -36,20 +43,28 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
   /**
    * Creates a simulated flywheel mechanism.
    *
-   * @param plant The linear system that represents the flywheel. Use either {@link
-   *     LinearSystemId#createFlywheelSystem(DCMotor, double, double)} if using physical constants
-   *     or {@link LinearSystemId#identifyVelocitySystem(double, double)} if using system
-   *     characterization.
+   * @param linearSystemComponent The linear system component of the affine system for the flywheel.
+   *     Use either {@link LinearSystemId#createFlywheelSystem(DCMotor, double, double)} if using
+   *     physical constants or {@link LinearSystemId#identifyVelocitySystem(double, double)} if
+   *     using system characterization.
+   * @param kS The minimum voltage needed to move the flywheel.
    * @param gearbox The type of and number of motors in the flywheel gearbox.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 1 element for velocity.
    */
   public FlywheelSim(
-      LinearSystem<N1, N1, N1> plant, DCMotor gearbox, double... measurementStdDevs) {
-    super(plant, measurementStdDevs);
+      LinearSystem<N1, N1, N1> linearSystemComponent,
+      double kS,
+      DCMotor gearbox,
+      double... measurementStdDevs) {
+    super(new AffineSystem<>(linearSystemComponent), measurementStdDevs);
+    m_kS = kS;
+    m_kA = linearSystemComponent.getB(0, 0);
     m_gearbox = gearbox;
-    m_gearing = gearbox.KtNMPerAmp * plant.getA(0, 0) / plant.getB(0, 0);
-    m_jKgMetersSquared = m_gearing * gearbox.KtNMPerAmp / (gearbox.rOhms * plant.getB(0, 0));
+    m_gearing =
+        gearbox.KtNMPerAmp * linearSystemComponent.getA(0, 0) / linearSystemComponent.getB(0, 0);
+    m_jKgMetersSquared =
+        m_gearing * gearbox.KtNMPerAmp / (gearbox.rOhms * linearSystemComponent.getB(0, 0));
   }
 
   /**
@@ -86,6 +101,15 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
    */
   public DCMotor getGearBox() {
     return m_gearbox;
+  }
+
+  /**
+   * Returns the voltage needed to overcome static friction.
+   *
+   * @return the voltage to overcome static friction.
+   */
+  public double getKs() {
+    return m_kS;
   }
 
   /**
@@ -146,5 +170,11 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
   public void setInputVoltage(double volts) {
     setInput(volts);
     clampInput(RobotController.getBatteryVoltage());
+  }
+
+  @Override
+  public void update(double dtSeconds) {
+    setc(1, (-m_kS / m_kA) * Math.signum(m_x.get(0, 0)));
+    super.update(dtSeconds);
   }
 }
