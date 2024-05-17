@@ -83,9 +83,7 @@ class AffineSystem {
     Matrixd<States, Inputs> B{m_linearSystemComponent.B()};
     DiscretizeAB<States, Inputs>(A, B, dt, &discA, &discB);
 
-
-    return discA * x +
-           discB * (clampedU + B.transpose() * c);
+    return discA * x + discB * (clampedU + B.transpose() * c);
   }
 
   /**

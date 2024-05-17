@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include <units/angular_velocity.h>
 #include <units/angular_acceleration.h>
+#include <units/angular_velocity.h>
 #include <units/moment_of_inertia.h>
-
 #include <wpi/MathExtras.h>
 
 #include "frc/simulation/AffineSystemSim.h"
@@ -24,8 +23,8 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
   /**
    * Creates a simulated flywheel mechanism.
    *
-   * @param linearSystemComponent             The linear system component of the affine system for the flywheel. This
-   *                           system can be created with
+   * @param linearSystemComponent             The linear system component of the 
+   * affine system for the flywheel. This system can be created with
    *                           LinearSystemId::FlywheelSystem() or
    * LinearSystemId::IdentifyVelocitySystem().
    * @param kS                 The minimum voltage needed to move the flywheel. 
@@ -34,13 +33,12 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
    * @param measurementStdDevs The standard deviation of the measurement noise.
    */
   FlywheelSim(const LinearSystem<1, 1, 1>& linearSystemComponent, 
-              units::volt_t kS,
-              const DCMotor& gearbox,
+              units::volt_t kS, const DCMotor& gearbox,
               const std::array<double, 1>& measurementStdDevs = {0.0});
 
+  using AffineSystemSim::Setc;
   using AffineSystemSim::SetState;
   using AffineSystemSim::Update;
-  using AffineSystemSim::Setc;
 
   /**
    * Sets the flywheel's state.
@@ -96,7 +94,7 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
    * Returns the voltage needed to overcome static friction.
    *
    */
-  units::volt_t Ks() const {return m_kS;}
+  units::volt_t Ks() const { return m_kS; }
 
   /**
    * Updates the simulation.
@@ -104,10 +102,10 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
    * @param dt The time between updates.
    */
   void Update(units::second_t dt) {
-    AffineSystemSim::Setc(0, (-m_kS.value() / m_kA.value()) * wpi::sgn(m_x(0, 0)));
+    AffineSystemSim::Setc(0, 
+                          (-m_kS.value() / m_kA.value()) * wpi::sgn(m_x(0, 0)));
     AffineSystemSim::Update(dt);
   }
-
 
  private:
   DCMotor m_gearbox;

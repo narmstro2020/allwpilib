@@ -11,14 +11,14 @@ using namespace frc;
 using namespace frc::sim;
 
 FlywheelSim::FlywheelSim(const LinearSystem<1, 1, 1>& linearSystemComponent,
-                         units::volt_t kS,
-                         const DCMotor& gearbox,
+                         units::volt_t kS, const DCMotor& gearbox,
                          const std::array<double, 1>& measurementStdDevs)
     : AffineSystemSim(AffineSystem(linearSystemComponent), measurementStdDevs),
       m_gearbox(gearbox),
       m_kS{kS},
       m_kA{linearSystemComponent.B(0, 0)},
-      m_gearing(gearbox.Kt.value() * linearSystemComponent.A(0, 0) / linearSystemComponent.B(0, 0)),
+      m_gearing(gearbox.Kt.value() * linearSystemComponent.A(0, 0) /
+                linearSystemComponent.B(0, 0)),
       m_j(m_gearing * gearbox.Kt.value() /
           (gearbox.R.value() * linearSystemComponent.B(0, 0))) {}
 
