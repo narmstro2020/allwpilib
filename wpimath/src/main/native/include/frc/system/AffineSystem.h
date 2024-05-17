@@ -51,9 +51,9 @@ class AffineSystem {
       const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent)
       : m_linearSystemComponent{linearSystemComponent} {}
 
-  explicit AffineSystem(const AffineSystem&) = default;
+  AffineSystem(const AffineSystem&) = default;
   AffineSystem& operator=(const AffineSystem&) = default;
-  explicit AffineSystem(AffineSystem&&) = default;
+  AffineSystem(AffineSystem&&) = default;
   AffineSystem& operator=(AffineSystem&&) = default;
 
   /**
