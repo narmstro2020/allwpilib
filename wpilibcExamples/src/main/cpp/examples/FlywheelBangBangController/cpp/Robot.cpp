@@ -96,7 +96,7 @@ class Robot : public frc::TimedRobot {
   frc::LinearSystem<1, 1, 1> m_plant{frc::LinearSystemId::FlywheelSystem(
       m_gearbox, kFlywheelMomentOfInertia, kFlywheelGearing)};
 
-  frc::sim::FlywheelSim m_flywheelSim{m_plant, m_gearbox};
+  frc::sim::FlywheelSim m_flywheelSim{m_plant, 0_V, m_gearbox};
   frc::sim::EncoderSim m_encoderSim{m_encoder};
 };
 

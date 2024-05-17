@@ -15,6 +15,7 @@
 #include "frc/EigenCore.h"
 #include "frc/StateSpaceUtil.h"
 #include "frc/system/Discretization.h"
+#include "frc/system/LinearSystem.h"
 #include "units/time.h"
 
 namespace frc {
@@ -39,7 +40,7 @@ class AffineSystem {
   using StateVector = Vectord<States>;
   using InputVector = Vectord<Inputs>;
   using OutputVector = Vectord<Outputs>;
-  using ConstantVector = Vectord<Outputs>;
+  using ConstantVector = Vectord<States>;
 
   /**
    * Constructs a new AffineSystem from a LinearSystem component.
@@ -47,14 +48,13 @@ class AffineSystem {
    * @param linearSystemComponent The linear system component.
    */
   explicit AffineSystem(
-      const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent) {
-    m_linearSystemComponent = linearSystemComponent
-  }
+      const frc::LinearSystem<States, Inputs, Outputs>& linearSystemComponent)
+      : m_linearSystemComponent{linearSystemComponent} {}
 
-  explicit AffineSystem(const LinearSystem&) = default;
-  AffineSystem& operator=(const LinearSystem&) = default;
-  explicit AffineSystem(LinearSystem&&) = default;
-  AffineSystem& operator=(LinearSystem&&) = default;
+  explicit AffineSystem(const AffineSystem&) = default;
+  AffineSystem& operator=(const AffineSystem&) = default;
+  explicit AffineSystem(AffineSystem&&) = default;
+  AffineSystem& operator=(AffineSystem&&) = default;
 
   /**
    * Returns the system matrix A.
@@ -79,10 +79,13 @@ class AffineSystem {
                          const ConstantVector c, units::second_t dt) const {
     Matrixd<States, States> discA;
     Matrixd<States, Inputs> discB;
-    DiscretizeAB<States, Inputs>(m_A, m_B, dt, &discA, &discB);
+    Matrixd<States, States> A{m_linearSystemComponent.A()};
+    Matrixd<States, Inputs> B{m_linearSystemComponent.B()};
+    DiscretizeAB<States, Inputs>(A, B, dt, &discA, &discB);
+
 
     return discA * x +
-           discB * (clampedU + m_linearSystemComponent.B().Solve(c));
+           discB * (clampedU + B.transpose() * c);
   }
 
   /**

@@ -37,7 +37,7 @@ class AffineSystemSim {
    * @param measurementStdDevs The standard deviations of the measurements.
    */
   explicit AffineSystemSim(
-      const LinearSystem<States, Inputs, Outputs>& affineSystem,
+      const AffineSystem<States, Inputs, Outputs>& affineSystem,
       const std::array<double, Outputs>& measurementStdDevs = {})
       : m_affineSystem(affineSystem), m_measurementStdDevs(measurementStdDevs) {
     m_x = Vectord<States>::Zero();
@@ -59,7 +59,7 @@ class AffineSystemSim {
     m_x = UpdateX(m_x, m_u, dt);
 
     // y = Cx + Du
-    m_y = m_system.CalculateY(m_x, m_u);
+    m_y = m_affineSystem.CalculateY(m_x, m_u);
 
     // Add noise. If the user did not pass a noise vector to the
     // constructor, then this method will not do anything because
@@ -160,7 +160,7 @@ class AffineSystemSim {
   virtual Vectord<States> UpdateX(const Vectord<States>& currentXhat,
                                   const Vectord<Inputs>& u,
                                   units::second_t dt) {
-    return m_system.CalculateX(currentXhat, u, m_c, dt);
+    return m_affineSystem.CalculateX(currentXhat, u, m_c, dt);
   }
 
   /**

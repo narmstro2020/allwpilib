@@ -4,24 +4,26 @@
 
 #include "frc/simulation/FlywheelSim.h"
 
-#include <wpi/MathExtras.h>
 
 #include "frc/system/plant/LinearSystemId.h"
 
 using namespace frc;
 using namespace frc::sim;
 
-FlywheelSim::FlywheelSim(const LinearSystem<1, 1, 1>& plant,
+FlywheelSim::FlywheelSim(const LinearSystem<1, 1, 1>& linearSystemComponent,
+                         units::volt_t kS,
                          const DCMotor& gearbox,
                          const std::array<double, 1>& measurementStdDevs)
-    : LinearSystemSim<1, 1, 1>(plant, measurementStdDevs),
+    : AffineSystemSim(AffineSystem(linearSystemComponent), measurementStdDevs),
       m_gearbox(gearbox),
-      m_gearing(gearbox.Kt.value() * m_plant.A(0, 0) / m_plant.B(0, 0)),
+      m_kS{kS},
+      m_kA{linearSystemComponent.B(0, 0)},
+      m_gearing(gearbox.Kt.value() * linearSystemComponent.A(0, 0) / linearSystemComponent.B(0, 0)),
       m_j(m_gearing * gearbox.Kt.value() /
-          (gearbox.R.value() * m_plant.B(0, 0))) {}
+          (gearbox.R.value() * linearSystemComponent.B(0, 0))) {}
 
 void FlywheelSim::SetState(units::radians_per_second_t velocity) {
-  LinearSystemSim::SetState(Vectord<1>{velocity.value()});
+  AffineSystemSim::SetState(Vectord<1>{velocity.value()});
 }
 
 units::radians_per_second_t FlywheelSim::GetAngularVelocity() const {
