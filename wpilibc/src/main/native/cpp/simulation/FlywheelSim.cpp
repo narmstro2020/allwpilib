@@ -4,7 +4,6 @@
 
 #include "frc/simulation/FlywheelSim.h"
 
-
 #include "frc/system/plant/LinearSystemId.h"
 
 using namespace frc;

@@ -23,16 +23,16 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
   /**
    * Creates a simulated flywheel mechanism.
    *
-   * @param linearSystemComponent             The linear system component of the 
+   * @param linearSystemComponent             The linear system component of the
    * affine system for the flywheel. This system can be created with
    *                           LinearSystemId::FlywheelSystem() or
    * LinearSystemId::IdentifyVelocitySystem().
-   * @param kS                 The minimum voltage needed to move the flywheel. 
+   * @param kS                 The minimum voltage needed to move the flywheel.
    * @param gearbox            The type of and number of motors in the flywheel
    *                           gearbox.
    * @param measurementStdDevs The standard deviation of the measurement noise.
    */
-  FlywheelSim(const LinearSystem<1, 1, 1>& linearSystemComponent, 
+  FlywheelSim(const LinearSystem<1, 1, 1>& linearSystemComponent,
               units::volt_t kS, const DCMotor& gearbox,
               const std::array<double, 1>& measurementStdDevs = {0.0});
 
@@ -102,7 +102,7 @@ class FlywheelSim : public AffineSystemSim<1, 1, 1> {
    * @param dt The time between updates.
    */
   void Update(units::second_t dt) {
-    AffineSystemSim::Setc(0, 
+    AffineSystemSim::Setc(0,
                           (-m_kS.value() / m_kA.value()) * wpi::sgn(m_x(0, 0)));
     AffineSystemSim::Update(dt);
   }
