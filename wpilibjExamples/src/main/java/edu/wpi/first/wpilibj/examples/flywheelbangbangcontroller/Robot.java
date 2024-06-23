@@ -4,6 +4,9 @@
 
 package edu.wpi.first.wpilibj.examples.flywheelbangbangcontroller;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.numbers.N1;
@@ -11,6 +14,9 @@ import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotController;
@@ -65,6 +71,11 @@ public class Robot extends TimedRobot {
   private final FlywheelSim m_flywheelSim = new FlywheelSim(m_plant, m_gearbox);
   private final EncoderSim m_encoderSim = new EncoderSim(m_encoder);
 
+  private final MutableMeasure<Velocity<Angle>> m_prevSpeedSetpoint =
+      MutableMeasure.zero(RadiansPerSecond);
+  private final MutableMeasure<Velocity<Angle>> m_speedSetpoint =
+      MutableMeasure.zero(RadiansPerSecond);
+
   @Override
   public void robotInit() {
     // Add bang-bang controler to SmartDashboard and networktables.
@@ -84,10 +95,14 @@ public class Robot extends TimedRobot {
     // Set setpoint and measurement of the bang-bang controller
     double bangOutput = m_bangBangControler.calculate(m_encoder.getRate(), setpoint) * 12.0;
 
+    m_prevSpeedSetpoint.mut_setMagnitude(m_encoder.getRate());
+    m_speedSetpoint.mut_setMagnitude(setpoint);
+
     // Controls a motor with the output of the BangBang controller and a
     // feedforward. The feedforward is reduced slightly to avoid overspeeding
     // the shooter.
-    m_flywheelMotor.setVoltage(bangOutput + 0.9 * m_feedforward.calculate(setpoint));
+    m_flywheelMotor.setVoltage(
+        bangOutput + 0.9 * m_feedforward.calculate(m_prevSpeedSetpoint, m_speedSetpoint).in(Volts));
   }
 
   /** Update our simulation. This should be run every robot loop in simulation. */
