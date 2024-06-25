@@ -36,7 +36,7 @@ TEST(ElevatorFeedforwardTest, Calculate) {
   frc::Vectord<1> r{2.0};
   frc::Vectord<1> nextR{3.0};
   EXPECT_NEAR(plantInversion.Calculate(r, nextR)(0) + Ks.value() + Kg.value(),
-              elevatorFF.Calculate(2_mps, 3_mps, dt).value(), 0.002);
+              elevatorFF.Calculate(2_mps, 3_mps).value(), 0.002);
 }
 
 TEST(ElevatorFeedforwardTest, AchievableVelocity) {
