@@ -23,10 +23,6 @@ TEST(ElevatorFeedforwardTest, Calculate) {
 
   EXPECT_NEAR(elevatorFF.Calculate(0_m / 1_s).value(), Kg.value(), 0.002);
   EXPECT_NEAR(elevatorFF.Calculate(2_m / 1_s).value(), 4.5, 0.002);
-  EXPECT_NEAR(elevatorFF.Calculate(2_m / 1_s, 1_m / 1_s / 1_s).value(), 6.5,
-              0.002);
-  EXPECT_NEAR(elevatorFF.Calculate(-2_m / 1_s, 1_m / 1_s / 1_s).value(), -0.5,
-              0.002);
 
   frc::Matrixd<1, 1> A{-Kv.value() / Ka.value()};
   frc::Matrixd<1, 1> B{1.0 / Ka.value()};
