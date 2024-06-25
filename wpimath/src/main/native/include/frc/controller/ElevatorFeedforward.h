@@ -108,7 +108,6 @@ class ElevatorFeedforward {
    * @param currentVelocity The current velocity setpoint, in distance per
    *                        second.
    * @param nextVelocity    The next velocity setpoint, in distance per second.
-   * @param dt              Time between velocity setpoints in seconds.
    * @return The computed feedforward, in volts.
    */
   constexpr units::volt_t Calculate(
