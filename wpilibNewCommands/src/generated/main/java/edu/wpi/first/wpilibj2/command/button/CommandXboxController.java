@@ -6,6 +6,7 @@
 
 package edu.wpi.first.wpilibj2.command.button;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -260,6 +261,84 @@ public class CommandXboxController extends CommandGenericHID {
   }
 
   /**
+   * Constructs a Trigger instance around the magnitude of the left x axis. The returned
+   * trigger will be true when the magnitude is greater than {@code threshold}.
+   *
+   * @param threshold the minimum axis magnitude for the returned {@link Trigger} to be true. This value
+   *     should be in the range [0, 1] where 0 is the unpressed state of the axis.
+   * @param loop the event loop instance to attach the Trigger to.
+   * @return a Trigger instance that is true when the left x axis magnitude exceeds the provided
+   *     threshold, attached to the given event loop
+   */
+  public Trigger leftX(double threshold, EventLoop loop) {
+    return axisGreaterThan(XboxController.Axis.kLeftX.value, threshold, loop);
+  }
+
+  /**
+   * Constructs a Trigger instance around the magnitude of the left x axis. The returned
+   * trigger will be true when the magnitude is greater than {@code threshold}.
+   *
+   * @param threshold the minimum axis magnitude for the returned {@link Trigger} to be true. This value
+   *     should be in the range [0, 1] where 0 is the unpressed state of the axis.
+   * @return a Trigger instance that is true when the left x axis magnitude axis exceeds the provided
+   *     threshold, attached to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler
+   *     button loop}.
+   */
+  public Trigger leftX(double threshold) {
+    return leftX(threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
+  }
+
+  /**
+   * Constructs a Trigger instance around the magnitude of the left x axis. The returned trigger
+   * will be true when the axis value is greater than 0.5.
+   *
+   * @return a Trigger instance that is true when the left x axis magnitude exceeds 0.5, attached to
+   *     the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+   */
+  public Trigger leftX() {
+    return leftX(0.5);
+  }  
+
+  /**
+   * Constructs a Trigger instance around the magnitude of the left y axis. The returned
+   * trigger will be true when the magnitude is greater than {@code threshold}.
+   *
+   * @param threshold the minimum axis magnitude for the returned {@link Trigger} to be true. This value
+   *     should be in the range [0, 1] where 0 is the unpressed state of the axis.
+   * @param loop the event loop instance to attach the Trigger to.
+   * @return a Trigger instance that is true when the left y axis magnitude exceeds the provided
+   *     threshold, attached to the given event loop
+   */
+  public Trigger leftY(double threshold, EventLoop loop) {
+    return axisGreaterThan(XboxController.Axis.kLeftY.value, threshold, loop);
+  }
+
+  /**
+   * Constructs a Trigger instance around the magnitude of the left y axis. The returned
+   * trigger will be true when the magnitude is greater than {@code threshold}.
+   *
+   * @param threshold the minimum axis magnitude for the returned {@link Trigger} to be true. This value
+   *     should be in the range [0, 1] where 0 is the unpressed state of the axis.
+   * @return a Trigger instance that is true when the left y axis magnitude axis exceeds the provided
+   *     threshold, attached to the {@link CommandScheduler#getDefaultButtonLoop() default scheduler
+   *     button loop}.
+   */
+  public Trigger leftY(double threshold) {
+    return leftX(threshold, CommandScheduler.getInstance().getDefaultButtonLoop());
+  }
+
+  /**
+   * Constructs a Trigger instance around the magnitude of the left y axis. The returned trigger
+   * will be true when the axis value is greater than 0.5.
+   *
+   * @return a Trigger instance that is true when the left y axis magnitude exceeds 0.5, attached to
+   *     the {@link CommandScheduler#getDefaultButtonLoop() default scheduler button loop}.
+   */
+  public Trigger leftY() {
+    return leftX(0.5);
+  }   
+
+  /**
    * Constructs a Trigger instance around the axis value of the left trigger. The returned
    * trigger will be true when the axis value is greater than {@code threshold}.
    *
@@ -347,6 +426,16 @@ public class CommandXboxController extends CommandGenericHID {
   }
 
   /**
+   * Get the X axis value of left side of the controller factoring in a deadband.
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getLeftX(double deadband) {
+    return MathUtil.applyDeadband(getLeftX(), deadband);
+  }  
+
+  /**
    * Get the X axis value of right side of the controller.
    *
    * @return The axis value.
@@ -354,6 +443,16 @@ public class CommandXboxController extends CommandGenericHID {
   public double getRightX() {
     return m_hid.getRightX();
   }
+
+  /**
+   * Get the X axis value of right side of the controller factoring in a deadband.
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getRightX(double deadband) {
+    return MathUtil.applyDeadband(getRightX(), deadband);
+  }   
 
   /**
    * Get the Y axis value of left side of the controller.
@@ -365,6 +464,16 @@ public class CommandXboxController extends CommandGenericHID {
   }
 
   /**
+   * Get the Y axis value of left side of the controller factoring in a deadband.
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getLeftY(double deadband) {
+    return MathUtil.applyDeadband(getLeftY(), deadband);
+  }   
+
+  /**
    * Get the Y axis value of right side of the controller.
    *
    * @return The axis value.
@@ -374,6 +483,16 @@ public class CommandXboxController extends CommandGenericHID {
   }
 
   /**
+   * Get the Y axis value of right side of the controller factoring in a deadband.
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getRightY(double deadband) {
+    return MathUtil.applyDeadband(getRightY(), deadband);
+  }     
+
+  /**
    * Get the left trigger axis value of the controller. Note that this axis is bound to the
    * range of [0, 1] as opposed to the usual [-1, 1].
    *
@@ -381,7 +500,18 @@ public class CommandXboxController extends CommandGenericHID {
    */
   public double getLeftTriggerAxis() {
     return m_hid.getLeftTriggerAxis();
-  }
+  }  
+
+  /**
+   * Get the left trigger axis value of the controller factoring in a deadband. Note that this axis is bound to the
+   * range of [0, 1] as opposed to the usual [-1, 1].
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getLeftTriggerAxis(double deadband) {
+    return MathUtil.applyDeadband(m_hid.getLeftTriggerAxis(), deadband);
+  }  
 
   /**
    * Get the right trigger axis value of the controller. Note that this axis is bound to the
@@ -392,4 +522,16 @@ public class CommandXboxController extends CommandGenericHID {
   public double getRightTriggerAxis() {
     return m_hid.getRightTriggerAxis();
   }
+
+  /**
+   * Get the right trigger axis value of the controller factoring in a deadband. Note that this axis is bound to the
+   * range of [0, 1] as opposed to the usual [-1, 1].
+   *
+   * @param deadband The value this input is deadbanded against.  
+   * @return The axis value.
+   */
+  public double getRightTriggerAxis(double deadband) {
+    return MathUtil.applyDeadband(m_hid.getRightTriggerAxis(), deadband);
+  }    
+
 }
