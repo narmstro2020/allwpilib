@@ -34,6 +34,8 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
       units::compound_unit<Distance, units::inverse<units::seconds>>,
       units::inverse<units::seconds>>>;
 
+  using Input_t = units::unit_t<Input>;
+
   /**
    * Creates a simulated DC motor mechanism.
    *
@@ -150,7 +152,7 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
    *
    * @return The DC motor current draw.
    */
-  units::ampere_t GetCurrentDraw() const {
+  units::ampere_t GetCurrent() const {
     // I = V / R - omega / (Kv * R)
     // Reductions are greater than 1, so a reduction of 10:1 would mean the
     // motor is spinning 10x faster than the output.
@@ -164,14 +166,34 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
    *
    * @return The DC motor input voltage.
    */
-  units::volt_t GetInputVoltage() const { return units::volt_t{GetInput(0)}; }
+  units::volt_t GetVoltage() const { return units::volt_t{GetInput(0)}; }
+
+  /**
+   * Sets the input for the DC motor.
+   *
+   * @param input The input.
+   */
+  void SetInput(Input_t input) {
+    SetInput(Vectord<1>{input.value()});
+    ClampInput(frc::RobotController::GetBatteryVoltage().value());
+  }
 
   /**
    * Sets the input voltage for the DC motor.
    *
    * @param voltage The input voltage.
    */
-  void SetInputVoltage(units::volt_t voltage) {
+  void SetInputCurrent(units::volt_t voltage) {
+    SetInput(Vectord<1>{voltage.value()});
+    ClampInput(frc::RobotController::GetBatteryVoltage().value());
+  }
+
+  /**
+   * Sets the input voltage for the DC motor.
+   *
+   * @param voltage The input voltage.
+   */
+  void SetInput(units::volt_t voltage) {
     SetInput(Vectord<1>{voltage.value()});
     ClampInput(frc::RobotController::GetBatteryVoltage().value());
   }
