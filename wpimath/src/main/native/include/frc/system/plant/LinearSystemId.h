@@ -35,6 +35,10 @@ class WPILIB_DLLEXPORT LinearSystemId {
       units::compound_unit<Distance, units::inverse<units::seconds>>,
       units::inverse<units::seconds>>>;
 
+  template <typename Input>
+    requires(units::current_unit<Input> || units::voltage_unit<Input>)
+  using Input_t = units::unit_t<Input>;
+
   /**
    * Create a state-space model of the elevator system. The states of the system
    * are [position, velocity]ᵀ, inputs are [voltage], and outputs are [position,
@@ -124,12 +128,12 @@ class WPILIB_DLLEXPORT LinearSystemId {
    * @see <a
    * href="https://github.com/wpilibsuite/sysid">https://github.com/wpilibsuite/sysid</a>
    */
-  template <typename Distance>
-    requires std::same_as<units::meter, Distance> ||
-             std::same_as<units::radian, Distance>
+  template <typename Distance, typename Input>
+    requires(units::length_unit<Distance> || units::angle_unit<Distance>) &&
+            (units::current_unit<Input> || units::voltage_unit<Input>)
   static constexpr LinearSystem<1, 1, 1> IdentifyVelocitySystem(
-      decltype(1_V / Velocity_t<Distance>(1)) kV,
-      decltype(1_V / Acceleration_t<Distance>(1)) kA) {
+      decltype(Input_t<Input>(1) / Velocity_t<Distance>(1)) kV,
+      decltype(Input_t<Input>(1) / Acceleration_t<Distance>(1)) kA) {
     if (kV < decltype(kV){0}) {
       throw std::domain_error("Kv must be greater than or equal to zero.");
     }
@@ -167,12 +171,12 @@ class WPILIB_DLLEXPORT LinearSystemId {
    * @see <a
    * href="https://github.com/wpilibsuite/sysid">https://github.com/wpilibsuite/sysid</a>
    */
-  template <typename Distance>
-    requires std::same_as<units::meter, Distance> ||
-             std::same_as<units::radian, Distance>
+  template <typename Distance, typename Input>
+    requires(units::length_unit<Distance> || units::angle_unit<Distance>) &&
+            (units::current_unit<Input> || units::voltage_unit<Input>)
   static constexpr LinearSystem<2, 1, 2> IdentifyPositionSystem(
-      decltype(1_V / Velocity_t<Distance>(1)) kV,
-      decltype(1_V / Acceleration_t<Distance>(1)) kA) {
+      decltype(Input_t<Input>(1) / Velocity_t<Distance>(1)) kV,
+      decltype(Input_t<Input>(1) / Acceleration_t<Distance>(1)) kA) {
     if (kV < decltype(kV){0}) {
       throw std::domain_error("Kv must be greater than or equal to zero.");
     }
@@ -348,6 +352,8 @@ class WPILIB_DLLEXPORT LinearSystemId {
    * @see <a
    * href="https://github.com/wpilibsuite/sysid">https://github.com/wpilibsuite/sysid</a>
    */
+  template <typename Input>
+    requires(units::voltage_unit<Input>)
   static constexpr LinearSystem<2, 1, 2> DCMotorSystem(
       DCMotor motor, units::kilogram_square_meter_t J, double gearing) {
     if (J <= 0_kg_sq_m) {
@@ -369,41 +375,30 @@ class WPILIB_DLLEXPORT LinearSystemId {
   }
 
   /**
-   * Create a state-space model of a DC motor system from its kV
-   * (volts/(unit/sec)) and kA (volts/(unit/sec²)). These constants can be
-   * found using SysId. the states of the system are [angular position, angular
-   * velocity]ᵀ, inputs are [voltage], and outputs are [angular position,
-   * angular velocity]ᵀ.
+   * Create a state-space model of a DC motor system. The states of the system
+   * are [angular position, angular velocity]ᵀ, inputs are [voltage], and
+   * outputs are [angular position, angular velocity]ᵀ.
    *
-   * You MUST use an SI unit (i.e. meters or radians) for the Distance template
-   * argument. You may still use non-SI units (such as feet or inches) for the
-   * actual method arguments; they will automatically be converted to SI
-   * internally.
-   *
-   * The parameters provided by the user are from this feedforward model:
-   *
-   * u = K_v v + K_a a
-   *
-   * @param kV The velocity gain, in volts/(unit/sec).
-   * @param kA The acceleration gain, in volts/(unit/sec²).
-   *
-   * @throws std::domain_error if kV < 0 or kA <= 0.
+   * @param motor The motor (or gearbox) attached to the system.
+   * @param J the moment of inertia J of the DC motor.
+   * @param gearing Gear ratio from motor to output.
+   * @throws std::domain_error if J <= 0 or gearing <= 0.
+   * @see <a
+   * href="https://github.com/wpilibsuite/sysid">https://github.com/wpilibsuite/sysid</a>
    */
-  template <typename Distance>
-    requires std::same_as<units::meter, Distance> ||
-             std::same_as<units::radian, Distance>
+  template <typename Input>
+    requires(units::current_unit<Input>)
   static constexpr LinearSystem<2, 1, 2> DCMotorSystem(
-      decltype(1_V / Velocity_t<Distance>(1)) kV,
-      decltype(1_V / Acceleration_t<Distance>(1)) kA) {
-    if (kV < decltype(kV){0}) {
-      throw std::domain_error("Kv must be greater than or equal to zero.");
+      DCMotor motor, units::kilogram_square_meter_t J, double gearing) {
+    if (J <= 0_kg_sq_m) {
+      throw std::domain_error("J must be greater than zero.");
     }
-    if (kA <= decltype(kA){0}) {
-      throw std::domain_error("Ka must be greater than zero.");
+    if (gearing <= 0.0) {
+      throw std::domain_error("gearing must be greater than zero.");
     }
 
-    Matrixd<2, 2> A{{0.0, 1.0}, {0.0, -kV.value() / kA.value()}};
-    Matrixd<2, 1> B{0.0, 1.0 / kA.value()};
+    Matrixd<2, 2> A{{0.0, 1.0}, {0.0, 0.0}};
+    Matrixd<2, 1> B{{0.0}, {(gearing * motor.Kt / (J)).value()}};
     Matrixd<2, 2> C{{1.0, 0.0}, {0.0, 1.0}};
     Matrixd<2, 1> D{{0.0}, {0.0}};
 

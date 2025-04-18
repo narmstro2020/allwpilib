@@ -23,7 +23,7 @@
 
 TEST(StateSpaceSimTest, FlywheelSim) {
   const frc::LinearSystem<1, 1, 1> plant =
-      frc::LinearSystemId::IdentifyVelocitySystem<units::radian>(
+      frc::LinearSystemId::IdentifyVelocitySystem<units::radian, units::volt>(
           0.02_V / 1_rad_per_s, 0.01_V / 1_rad_per_s_sq);
   frc::sim::FlywheelSim sim{plant, frc::DCMotor::NEO(2)};
   frc::PIDController controller{0.2, 0.0, 0.0};

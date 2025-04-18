@@ -1,5 +1,36 @@
 # Algorithms
 
+## DC motor sim
+
+### Derivation
+
+For a simple DC motor with the model
+
+```
+  dx/dt = -G²Kₜ/(KᵥRJ)x + (GKₜ)/(RJ)u,
+```
+
+where
+
+```
+  A = -G²Kₜ/(KᵥRJ)
+  B = GKₜ/(RJ)
+```
+
+Solve for G.
+
+```
+  A/B = -G/Kᵥ
+  G = -KᵥA/B
+```
+
+Solve for J.
+
+```
+  B = GKₜ/(RJ)
+  J = GKₜ/(RB)
+```
+
 ## Simple motor feedforward
 
 ### Derivation

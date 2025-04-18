@@ -42,7 +42,7 @@ class Robot : public frc::TimedRobot {
   //
   // The Kv and Ka constants are found using the FRC Characterization toolsuite.
   frc::LinearSystem<1, 1, 1> m_flywheelPlant =
-      frc::LinearSystemId::IdentifyVelocitySystem<units::radian>(kFlywheelKv,
+      frc::LinearSystemId::IdentifyVelocitySystem<units::radian, units::volt>(kFlywheelKv,
                                                                  kFlywheelKa);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
