@@ -58,8 +58,8 @@ TEST(LinearSystemIDTest, FlywheelSystem) {
 
 TEST(LinearSystemIDTest, DCMotorSystem) {
 #if __GNUC__ <= 11
-  auto model = frc::LinearSystemId::DCMotorSystem<units::volt>(frc::DCMotor::NEO(2),
-                                                  0.00032_kg_sq_m, 1.0);
+  auto model = frc::LinearSystemId::DCMotorSystem<units::volt>(
+      frc::DCMotor::NEO(2), 0.00032_kg_sq_m, 1.0);
 #else
   constexpr auto model = frc::LinearSystemId::DCMotorSystem(
       frc::DCMotor::NEO(2), 0.00032_kg_sq_m, 1.0);
@@ -80,8 +80,9 @@ TEST(LinearSystemIDTest, IdentifyPositionSystem) {
   constexpr double ka = 0.5;
 
 #if __GNUC__ <= 11
-  auto model = frc::LinearSystemId::IdentifyPositionSystem<units::meter, units::volt>(
-      kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
+  auto model =
+      frc::LinearSystemId::IdentifyPositionSystem<units::meter, units::volt>(
+          kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #else
   constexpr auto model =
       frc::LinearSystemId::IdentifyPositionSystem<units::meter>(
@@ -101,8 +102,9 @@ TEST(LinearSystemIDTest, IdentifyVelocitySystem) {
   constexpr double ka = 0.5;
 
 #if __GNUC__ <= 11
-  auto model = frc::LinearSystemId::IdentifyVelocitySystem<units::meter, units::volt>(
-      kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
+  auto model =
+      frc::LinearSystemId::IdentifyVelocitySystem<units::meter, units::volt>(
+          kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #else
   constexpr auto model =
       frc::LinearSystemId::IdentifyVelocitySystem<units::meter>(
