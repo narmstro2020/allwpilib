@@ -78,8 +78,8 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
     // See wpimath/algorithms.md#DC_motor_sim for derivation
   }
 
-  using LinearSystemSim::SetState;
   using LinearSystemSim::SetInput;
+  using LinearSystemSim::SetState;
 
   /**
    * Sets the state of the DC motor.
@@ -167,9 +167,7 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
    *
    * @return The DC motor input voltage.
    */
-  units::volt_t GetVoltage() const { 
-    return units::volt_t{GetInput(0)}; 
-    }
+  units::volt_t GetVoltage() const { return units::volt_t{GetInput(0)}; }
 
   /**
    * Sets the input for the DC motor.
@@ -181,7 +179,7 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
 
     if constexpr (units::voltage_unit<Input>) {
       ClampInput(frc::RobotController::GetBatteryVoltage().value());
-    }else if constexpr (units::current_unit<Input>) {
+    } else if constexpr (units::current_unit<Input>) {
       ClampInput(m_gearbox.stallCurrent.value());
     }
   }
