@@ -50,9 +50,9 @@ class Elevator {
 
   // Simulation classes help us simulate what's going on, including gravity.
   frc::sim::ElevatorSim m_elevatorSim{m_elevatorGearbox,
-                                      Constants::kElevatorGearing,
                                       Constants::kCarriageMass,
                                       Constants::kElevatorDrumRadius,
+                                      Constants::kElevatorGearing,
                                       Constants::kMinElevatorHeight,
                                       Constants::kMaxElevatorHeight,
                                       true,

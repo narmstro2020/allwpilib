@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <concepts>
 #include <stdexcept>
 
 #include <gcem.hpp>

@@ -32,9 +32,9 @@ class PotentiometerPIDTest : public testing::Test {
 
  protected:
   frc::sim::ElevatorSim m_elevatorSim{m_elevatorGearbox,
-                                      kElevatorGearing,
                                       kCarriageMass,
                                       kElevatorDrumRadius,
+                                      kElevatorGearing,
                                       0.0_m,
                                       Robot::kFullHeight,
                                       true,

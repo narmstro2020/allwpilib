@@ -31,6 +31,37 @@ Solve for J.
   J = GKₜ/(RB)
 ```
 
+## Elevator sim
+
+### Derivation
+
+For an elevator with the model
+
+```
+  dx/dt = -G²Kₜ/(Rr²mKᵥ)x + (GKₜ)/(Rrm)u,
+```
+
+where
+
+```
+  A = -G²Kₜ/(Rr²mKᵥ)
+  B = (GKₜ)/(Rrm)
+```
+
+Solve for r.
+
+```
+  A/B = -G/rKᵥ
+  r = -BG/KᵥA
+```
+
+Solve for m.
+
+```
+  B = (GKₜ)/(Rrm)
+  m = (GKₜ)/(RrB)
+```
+
 ## Simple motor feedforward
 
 ### Derivation

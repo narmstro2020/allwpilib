@@ -75,6 +75,26 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
     // See wpimath/algorithms.md#DC_motor_sim for derivation
   }
 
+  /**
+   * Creates a simulated DC motor mechanism.
+   * @param gearbox            The type of and number of motors in the DC motor
+   * gearbox.
+   * @param plant              The linear system representing the DC motor. This
+   * system can be created with LinearSystemId::DCMotorSystem(). If
+   * LinearSystemId::DCMotorSystem(kV, kA) is used, the distance unit must be
+   * radians.
+   * @param measurementStdDevs The standard deviation of the measurement noise.
+   */
+  DCMotorSim(const DCMotor& gearbox, const LinearSystem<2, 1, 2>& plant,
+             const std::array<double, 2>& measurementStdDevs = {0.0, 0.0})
+      : LinearSystemSim<2, 1, 2>(plant, measurementStdDevs),
+        m_gearbox(gearbox),
+        m_gearing(-gearbox.Kv.value() * m_plant.A(1, 1) / m_plant.B(1, 0)),
+        m_j(m_gearing * gearbox.Kt.value() /
+            (gearbox.R.value() * m_plant.B(1, 0))) {
+    // See wpimath/algorithms.md#DC_motor_sim for derivation
+  }
+
   using LinearSystemSim::SetInput;
   using LinearSystemSim::SetState;
 

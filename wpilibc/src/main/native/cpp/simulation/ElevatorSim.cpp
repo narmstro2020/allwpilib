@@ -4,102 +4,72 @@
 
 #include "frc/simulation/ElevatorSim.h"
 
-#include <wpi/MathExtras.h>
-
-#include "frc/RobotController.h"
 #include "frc/system/NumericalIntegration.h"
 #include "frc/system/plant/LinearSystemId.h"
 
 using namespace frc;
 using namespace frc::sim;
 
-ElevatorSim::ElevatorSim(const LinearSystem<2, 1, 2>& plant,
-                         const DCMotor& gearbox, units::meter_t minHeight,
-                         units::meter_t maxHeight, bool simulateGravity,
-                         units::meter_t startingHeight,
+ElevatorSim::ElevatorSim(const DCMotor& gearbox, units::kilogram_t carriageMass,
+                         units::meter_t drumRadius, double gearing,
+                         units::meter_t minHeight, units::meter_t maxHeight,
+                         bool simulateGravity, units::meter_t startingHeight,
                          const std::array<double, 2>& measurementStdDevs)
-    : LinearSystemSim(plant, measurementStdDevs),
+    : LinearSystemSim(LinearSystemId::ElevatorSystem(gearbox, carriageMass,
+                                                     drumRadius, gearing),
+                      measurementStdDevs),
       m_gearbox(gearbox),
+      m_gearing(gearing),
+      m_drumRadius(drumRadius),
+      m_carriageMass(carriageMass),
+
       m_minHeight(minHeight),
       m_maxHeight(maxHeight),
       m_simulateGravity(simulateGravity) {
-  SetState(startingHeight, 0_mps);
+  SetState(startingHeight, units::meters_per_second_t(0));
 }
 
-ElevatorSim::ElevatorSim(const DCMotor& gearbox, double gearing,
-                         units::kilogram_t carriageMass,
-                         units::meter_t drumRadius, units::meter_t minHeight,
-                         units::meter_t maxHeight, bool simulateGravity,
-                         units::meter_t startingHeight,
+ElevatorSim::ElevatorSim(const DCMotor& gearbox, decltype(1_V / 1_mps) kV,
+                         decltype(1_V / 1_mps_sq) kA, double gearing,
+                         units::meter_t minHeight, units::meter_t maxHeight,
+                         bool simulateGravity, units::meter_t startingHeight,
                          const std::array<double, 2>& measurementStdDevs)
-    : ElevatorSim(LinearSystemId::ElevatorSystem(gearbox, carriageMass,
-                                                 drumRadius, gearing),
-                  gearbox, minHeight, maxHeight, simulateGravity,
-                  startingHeight, measurementStdDevs) {}
+    : LinearSystemSim(
+          LinearSystemId::IdentifyPositionSystem<units::meter, units::volt>(kV,
+                                                                            kA),
+          measurementStdDevs),
+      m_gearbox(gearbox),
+      m_gearing(gearing),
+      m_drumRadius(-m_plant.B(1, 0) * gearing /
+                   (gearbox.Kv.value() * m_plant.A(1, 1))),
+      m_carriageMass(
+          gearing * gearbox.Kt.value() /
+          (gearbox.R.value() * m_drumRadius.value() * m_plant.B(1, 0))),
+      m_minHeight(minHeight),
+      m_maxHeight(maxHeight),
+      m_simulateGravity(simulateGravity) {
+  // See wpimath/algorithms.md#Elevator_sim for derivation
+  SetState(startingHeight, units::meters_per_second_t(0));
+}
 
-template <typename Distance>
-  requires std::same_as<units::meter, Distance> ||
-           std::same_as<units::radian, Distance>
-ElevatorSim::ElevatorSim(decltype(1_V / Velocity_t<Distance>(1)) kV,
-                         decltype(1_V / Acceleration_t<Distance>(1)) kA,
-                         const DCMotor& gearbox, units::meter_t minHeight,
-                         units::meter_t maxHeight, bool simulateGravity,
-                         units::meter_t startingHeight,
+ElevatorSim::ElevatorSim(const DCMotor& gearbox,
+                         const LinearSystem<2, 1, 2>& plant, double gearing,
+                         units::meter_t minHeight, units::meter_t maxHeight,
+                         bool simulateGravity, units::meter_t startingHeight,
                          const std::array<double, 2>& measurementStdDevs)
-    : ElevatorSim(LinearSystemId::IdentifyPositionSystem(kV, kA), gearbox,
-                  minHeight, maxHeight, simulateGravity, startingHeight,
-                  measurementStdDevs) {}
-
-void ElevatorSim::SetState(units::meter_t position,
-                           units::meters_per_second_t velocity) {
-  SetState(
-      Vectord<2>{std::clamp(position, m_minHeight, m_maxHeight), velocity});
-}
-
-bool ElevatorSim::WouldHitLowerLimit(units::meter_t elevatorHeight) const {
-  return elevatorHeight <= m_minHeight;
-}
-
-bool ElevatorSim::WouldHitUpperLimit(units::meter_t elevatorHeight) const {
-  return elevatorHeight >= m_maxHeight;
-}
-
-bool ElevatorSim::HasHitLowerLimit() const {
-  return WouldHitLowerLimit(units::meter_t{m_y(0)});
-}
-
-bool ElevatorSim::HasHitUpperLimit() const {
-  return WouldHitUpperLimit(units::meter_t{m_y(0)});
-}
-
-units::meter_t ElevatorSim::GetPosition() const {
-  return units::meter_t{m_y(0)};
-}
-
-units::meters_per_second_t ElevatorSim::GetVelocity() const {
-  return units::meters_per_second_t{m_x(1)};
-}
-
-units::ampere_t ElevatorSim::GetCurrentDraw() const {
-  // I = V / R - omega / (Kv * R)
-  // Reductions are greater than 1, so a reduction of 10:1 would mean the motor
-  // is spinning 10x faster than the output.
-
-  double kA = 1.0 / m_plant.B(1, 0);
-  using Kv_t = units::unit_t<units::compound_unit<
-      units::volt, units::inverse<units::meters_per_second>>>;
-  Kv_t Kv = Kv_t{kA * m_plant.A(1, 1)};
-  units::meters_per_second_t velocity{m_x(1)};
-  units::radians_per_second_t motorVelocity = velocity * Kv * m_gearbox.Kv;
-
-  // Perform calculation and return.
-  return m_gearbox.Current(motorVelocity, units::volt_t{m_u(0)}) *
-         wpi::sgn(m_u(0));
-}
-
-void ElevatorSim::SetInputVoltage(units::volt_t voltage) {
-  SetInput(Vectord<1>{voltage.value()});
-  ClampInput(frc::RobotController::GetBatteryVoltage().value());
+    : LinearSystemSim(plant, measurementStdDevs),
+      m_gearbox(gearbox),
+      m_gearing(gearing),
+      m_drumRadius(-m_plant.B(1, 0) * gearing /
+                   (gearbox.Kv.value() * m_plant.A(1, 1))),
+      m_carriageMass(
+          gearing * gearbox.Kt.value() /
+          (gearbox.R.value() * m_drumRadius.value() * m_plant.B(1, 0))),
+      m_minHeight(minHeight),
+      m_maxHeight(maxHeight),
+      m_simulateGravity(simulateGravity) {
+  // See wpimath/algorithms.md#Elevator_sim for derivation
+  SetState(startingHeight, units::meters_per_second_t(0));
 }
 
 Vectord<2> ElevatorSim::UpdateX(const Vectord<2>& currentXhat,
