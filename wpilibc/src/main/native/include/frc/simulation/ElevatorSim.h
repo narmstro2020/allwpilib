@@ -200,7 +200,7 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
    */
   units::newton_t GetForce() const {
     return units::newton_t{GetAngularAcceleration().value() *
-                                 m_carriageMass.value()};
+                           m_carriageMass.value()};
   }
 
   /**
