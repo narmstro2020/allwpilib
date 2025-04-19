@@ -24,14 +24,11 @@ template <typename Input>
   requires(units::current_unit<Input> || units::voltage_unit<Input>)
 class DCMotorSim : public LinearSystemSim<2, 1, 2> {
  public:
-  template <typename Distance>
-    requires units::length_unit<units::radian>
   using Velocity_t = units::unit_t<
-      units::compound_unit<Distance, units::inverse<units::seconds>>>;
+      units::compound_unit<units::radian, units::inverse<units::seconds>>>;
 
-  template <typename Distance>
   using Acceleration_t = units::unit_t<units::compound_unit<
-      units::compound_unit<Distance, units::inverse<units::seconds>>,
+      units::compound_unit<units::radian, units::inverse<units::seconds>>,
       units::inverse<units::seconds>>>;
 
   using Input_t = units::unit_t<Input>;
