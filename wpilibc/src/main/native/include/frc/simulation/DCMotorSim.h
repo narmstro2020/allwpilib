@@ -79,6 +79,7 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
   }
 
   using LinearSystemSim::SetState;
+  using LinearSystemSim::SetInput;
 
   /**
    * Sets the state of the DC motor.
@@ -166,7 +167,9 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
    *
    * @return The DC motor input voltage.
    */
-  units::volt_t GetVoltage() const { return units::volt_t{GetInput(0)}; }
+  units::volt_t GetVoltage() const { 
+    return units::volt_t{GetInput(0)}; 
+    }
 
   /**
    * Sets the input for the DC motor.
@@ -175,27 +178,12 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
    */
   void SetInput(Input_t input) {
     SetInput(Vectord<1>{input.value()});
-    ClampInput(frc::RobotController::GetBatteryVoltage().value());
-  }
 
-  /**
-   * Sets the input voltage for the DC motor.
-   *
-   * @param voltage The input voltage.
-   */
-  void SetInputCurrent(units::volt_t voltage) {
-    SetInput(Vectord<1>{voltage.value()});
-    ClampInput(frc::RobotController::GetBatteryVoltage().value());
-  }
-
-  /**
-   * Sets the input voltage for the DC motor.
-   *
-   * @param voltage The input voltage.
-   */
-  void SetInput(units::volt_t voltage) {
-    SetInput(Vectord<1>{voltage.value()});
-    ClampInput(frc::RobotController::GetBatteryVoltage().value());
+    if constexpr (units::voltage_unit<Input>) {
+      ClampInput(frc::RobotController::GetBatteryVoltage().value());
+    }else if constexpr (units::current_unit<Input>) {
+      ClampInput(m_gearbox.stallCurrent.value());
+    }
   }
 
   /**

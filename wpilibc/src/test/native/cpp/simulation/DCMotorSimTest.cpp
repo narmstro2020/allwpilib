@@ -33,8 +33,8 @@ TEST(DCMotorSimTest, VoltageSteadyState) {
 
     // Then, SimulationPeriodic runs
     frc::sim::RoboRioSim::SetVInVoltage(
-        frc::sim::BatterySim::Calculate({sim.GetCurrentDraw()}));
-    sim.SetInputVoltage(motor.Get() *
+        frc::sim::BatterySim::Calculate({sim.GetCurrent()}));
+    sim.SetInput(motor.Get() *
                         frc::RobotController::GetBatteryVoltage());
     sim.Update(20_ms);
     encoderSim.SetRate(sim.GetAngularVelocity().value());
@@ -49,8 +49,8 @@ TEST(DCMotorSimTest, VoltageSteadyState) {
 
     // Then, SimulationPeriodic runs
     frc::sim::RoboRioSim::SetVInVoltage(
-        frc::sim::BatterySim::Calculate({sim.GetCurrentDraw()}));
-    sim.SetInputVoltage(motor.Get() *
+        frc::sim::BatterySim::Calculate({sim.GetCurrent()}));
+    sim.SetInput(motor.Get() *
                         frc::RobotController::GetBatteryVoltage());
     sim.Update(20_ms);
     encoderSim.SetRate(sim.GetAngularVelocity().value());
@@ -79,8 +79,8 @@ TEST(DCMotorSimTest, PositionFeedbackControl) {
 
     // Then, SimulationPeriodic runs
     frc::sim::RoboRioSim::SetVInVoltage(
-        frc::sim::BatterySim::Calculate({sim.GetCurrentDraw()}));
-    sim.SetInputVoltage(motor.Get() *
+        frc::sim::BatterySim::Calculate({sim.GetCurrent()}));
+    sim.SetInput(motor.Get() *
                         frc::RobotController::GetBatteryVoltage());
     sim.Update(20_ms);
     encoderSim.SetDistance(sim.GetAngularPosition().value());

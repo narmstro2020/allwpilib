@@ -61,7 +61,7 @@ TEST(LinearSystemIDTest, DCMotorSystem) {
   auto model = frc::LinearSystemId::DCMotorSystem<units::volt>(
       frc::DCMotor::NEO(2), 0.00032_kg_sq_m, 1.0);
 #else
-  constexpr auto model = frc::LinearSystemId::DCMotorSystem(
+  constexpr auto model = frc::LinearSystemId::DCMotorSystem<units::volt>(
       frc::DCMotor::NEO(2), 0.00032_kg_sq_m, 1.0);
 #endif
 
@@ -85,7 +85,7 @@ TEST(LinearSystemIDTest, IdentifyPositionSystem) {
           kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #else
   constexpr auto model =
-      frc::LinearSystemId::IdentifyPositionSystem<units::meter>(
+      frc::LinearSystemId::IdentifyPositionSystem<units::meter, units::volt>(
           kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #endif
 
@@ -107,7 +107,7 @@ TEST(LinearSystemIDTest, IdentifyVelocitySystem) {
           kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #else
   constexpr auto model =
-      frc::LinearSystemId::IdentifyVelocitySystem<units::meter>(
+      frc::LinearSystemId::IdentifyVelocitySystem<units::meter, units::volt>(
           kv * 1_V / 1_mps, ka * 1_V / 1_mps_sq);
 #endif
 
