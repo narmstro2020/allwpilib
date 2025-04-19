@@ -128,6 +128,7 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   void SetVelocity(units::meters_per_second_t velocity) {
     SetState(GetPosition(), velocity);
   }
+
   /**
    * Returns whether the elevator would hit the lower limit.
    *
@@ -137,6 +138,7 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   bool WouldHitLowerLimit(units::meter_t elevatorHeight) const {
     return elevatorHeight <= m_minHeight;
   }
+
   /**
    * Returns whether the elevator would hit the upper limit.
    *
@@ -146,6 +148,7 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   bool WouldHitUpperLimit(units::meter_t elevatorHeight) const {
     return elevatorHeight >= m_maxHeight;
   }
+
   /**
    * Returns whether the elevator has hit the lower limit.
    *
@@ -154,6 +157,7 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   bool HasHitLowerLimit() const {
     return WouldHitLowerLimit(units::meter_t{m_y(0)});
   }
+
   /**
    * Returns whether the elevator has hit the upper limit.
    *
@@ -162,12 +166,14 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   bool HasHitUpperLimit() const {
     return WouldHitUpperLimit(units::meter_t{m_y(0)});
   }
+
   /**
    * Returns the position of the elevator.
    *
    * @return The position of the elevator.
    */
   units::meter_t GetPosition() const { return units::meter_t{m_y(0)}; }
+
   /**
    * Returns the velocity of the elevator.
    *
@@ -185,6 +191,16 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   units::meters_per_second_squared_t GetAngularAcceleration() const {
     return units::meters_per_second_squared_t{
         (m_plant.A() * m_x + m_plant.B() * m_u)(1, 0)};
+  }
+
+  /**
+   * Returns the force acting on the elevator.
+   *
+   * @return The force acting on the elevator.
+   */
+  units::newton_t GetForce() const {
+    return units::newton_t{GetAngularAcceleration().value() *
+                                 m_carriageMass.value()};
   }
 
   /**
