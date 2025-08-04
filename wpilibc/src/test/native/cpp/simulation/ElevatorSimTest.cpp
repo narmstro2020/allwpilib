@@ -12,6 +12,7 @@
 #include "frc/motorcontrol/PWMVictorSPX.h"
 #include "frc/simulation/ElevatorSim.h"
 #include "frc/simulation/EncoderSim.h"
+#include "frc/system/LinearSystem.h"
 #include "frc/system/NumericalIntegration.h"
 #include "frc/system/plant/DCMotor.h"
 #include "frc/system/plant/LinearSystemId.h"
@@ -20,7 +21,11 @@
   EXPECT_LE(units::math::abs(val1 - val2), eps)
 
 TEST(ElevatorSimTest, StateSpaceSim) {
-  frc::sim::ElevatorSim sim(frc::DCMotor::Vex775Pro(4), 14.67, 8_kg, 0.75_in,
+  units::volt_t ks = 0.12_V;
+  units::volt_t kg = 0.20_V;
+  frc::LinearSystem<2, 1, 2> plant = frc::LinearSystemId::ElevatorSystem(
+      frc::DCMotor::Vex775Pro(4), 8_kg, 0.75_in, 14.67);
+  frc::sim::ElevatorSim sim(ks, kg, plant, frc::DCMotor::Vex775Pro(4), 14.67,
                             0_m, 3_m, true, 0_m, {0.01});
   frc::PIDController controller(10, 0.0, 0.0);
 
@@ -46,7 +51,11 @@ TEST(ElevatorSimTest, StateSpaceSim) {
 
 TEST(ElevatorSimTest, InitialState) {
   constexpr auto startingHeight = 0.5_m;
-  frc::sim::ElevatorSim sim(frc::DCMotor::KrakenX60(2), 20, 8_kg, 0.1_m, 0_m,
+  units::volt_t ks = 0.12_V;
+  units::volt_t kg = 0.20_V;
+  frc::LinearSystem<2, 1, 2> plant = frc::LinearSystemId::ElevatorSystem(
+      frc::DCMotor::KrakenX60(2), 8_kg, 0.1_m, 20);
+  frc::sim::ElevatorSim sim(ks, kg, plant, frc::DCMotor::KrakenX60(2), 20, 0_m,
                             1_m, true, startingHeight, {0.01, 0.0});
 
   EXPECT_DOUBLE_EQ(startingHeight.value(), sim.GetPosition().value());
@@ -54,7 +63,11 @@ TEST(ElevatorSimTest, InitialState) {
 }
 
 TEST(ElevatorSimTest, MinMax) {
-  frc::sim::ElevatorSim sim(frc::DCMotor::Vex775Pro(4), 14.67, 8_kg, 0.75_in,
+  units::volt_t ks = 0.12_V;
+  units::volt_t kg = 0.20_V;
+  frc::LinearSystem<2, 1, 2> plant = frc::LinearSystemId::ElevatorSystem(
+      frc::DCMotor::Vex775Pro(4), 8_kg, 0.75_in, 14.67);
+  frc::sim::ElevatorSim sim(ks, kg, plant, frc::DCMotor::Vex775Pro(4), 14.67,
                             0_m, 1_m, true, 0_m, {0.01});
   for (size_t i = 0; i < 100; ++i) {
     sim.SetInput(frc::Vectord<1>{0.0});
@@ -74,8 +87,12 @@ TEST(ElevatorSimTest, MinMax) {
 }
 
 TEST(ElevatorSimTest, Stability) {
+  units::volt_t ks = 0.12_V;
+  units::volt_t kg = 0.20_V;
+  frc::LinearSystem<2, 1, 2> plant = frc::LinearSystemId::ElevatorSystem(
+      frc::DCMotor::Vex775Pro(4), 4_kg, 0.5_in, 100);
   frc::sim::ElevatorSim sim{
-      frc::DCMotor::Vex775Pro(4), 100, 4_kg, 0.5_in, 0_m, 10_m, false, 0_m};
+      ks, kg, plant, frc::DCMotor::Vex775Pro(4), 100, 0_m, 10_m, false, 0_m};
 
   sim.SetState(frc::Vectord<2>{0.0, 0.0});
   sim.SetInput(frc::Vectord<1>{12.0});

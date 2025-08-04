@@ -26,12 +26,12 @@ ElevatorSim::ElevatorSim(const units::volt_t ks, const units::volt_t kg,
                    m_gearbox.Kv.value()},
       m_mass{m_gearing * m_gearbox.Kt.value() / m_drumRadius.value(),
              m_gearbox.R.value(), m_plant.B(1, 0)},
-      m_ks{ks},
-      m_kg{kg},
-      m_frictionAcceleration{ks.value() * m_gearing * m_gearbox.Kt.value() /
+      m_kg{9.8 / m_plant.B(1, 0)},
+      m_ks{ks * kg.value() / m_kg.value()},
+      m_frictionAcceleration{m_ks.value() * m_gearing * m_gearbox.Kt.value() /
                              m_mass.value() / m_drumRadius.value() /
                              m_gearbox.R.value()},
-      m_freeFallAcceleration{kg.value() * m_gearing * m_gearbox.Kt.value() /
+      m_freeFallAcceleration{m_kg.value() * m_gearing * m_gearbox.Kt.value() /
                              m_mass.value() / m_drumRadius.value() /
                              m_gearbox.R.value()},
       m_minHeight(minHeight),

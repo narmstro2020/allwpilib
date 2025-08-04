@@ -195,8 +195,8 @@ class ElevatorSim : public LinearSystemSim<2, 1, 2> {
   double m_gearing;
   units::meter_t m_drumRadius;
   units::kilogram_t m_mass;
-  units::volt_t m_ks;
   units::volt_t m_kg;
+  units::volt_t m_ks;
   units::meters_per_second_squared_t m_frictionAcceleration;
   units::meters_per_second_squared_t m_freeFallAcceleration;
   units::meter_t m_minHeight;
