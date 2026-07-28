@@ -20,6 +20,7 @@ import org.wpilib.math.linalg.Vector;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N7;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.system.NumericalIntegration;
 import org.wpilib.math.trajectory.DrivetrainSplineTrajectoryGenerator;
@@ -33,17 +34,16 @@ class DifferentialDrivetrainSimTest {
   void testConvergence() {
     RoboRioSim.resetData();
 
-    var motor = DCMotor.getNEO(2);
+    var gearbox = new Gearbox(DCMotor.kNEO, 2, 1.0);
     var plant =
         Models.differentialDriveFromPhysicalConstants(
-            motor, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 0.5, 1.0);
+            gearbox, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 0.5);
 
     var kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24));
     var sim =
         new DifferentialDrivetrainSim(
             plant,
-            motor,
-            1,
+            gearbox,
             kinematics.trackwidth,
             Units.inchesToMeters(2),
             VecBuilder.fill(0.001, 0.001, 0.0001, 0.1, 0.1, 0.005, 0.005));
@@ -100,14 +100,14 @@ class DifferentialDrivetrainSimTest {
 
   @Test
   void testCurrent() {
-    var motor = DCMotor.getNEO(2);
+    var gearbox = new Gearbox(DCMotor.kNEO, 2, 1.0);
     var plant =
         Models.differentialDriveFromPhysicalConstants(
-            motor, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 0.5, 1.0);
+            gearbox, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 0.5);
     var kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24));
     var sim =
         new DifferentialDrivetrainSim(
-            plant, motor, 1, kinematics.trackwidth, Units.inchesToMeters(2), null);
+            plant, gearbox, kinematics.trackwidth, Units.inchesToMeters(2), null);
 
     sim.setInputs(-12, -12);
     for (int i = 0; i < 10; i++) {
@@ -130,17 +130,16 @@ class DifferentialDrivetrainSimTest {
 
   @Test
   void testModelStability() {
-    var motor = DCMotor.getNEO(2);
+    var gearbox = new Gearbox(DCMotor.kNEO, 2, 5.0);
     var plant =
         Models.differentialDriveFromPhysicalConstants(
-            motor, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 2.0, 5.0);
+            gearbox, 50, Units.inchesToMeters(2), Units.inchesToMeters(12), 2.0);
 
     var kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24));
     var sim =
         new DifferentialDrivetrainSim(
             plant,
-            motor,
-            5,
+            gearbox,
             kinematics.trackwidth,
             Units.inchesToMeters(2),
             VecBuilder.fill(0, 0, 0.0001, 0.1, 0.1, 0.005, 0.005));
