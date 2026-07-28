@@ -7,34 +7,36 @@ package org.wpilib.simulation;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
-import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.system.RobotController;
 
-/** Represents a simulated DC motor mechanism. */
-public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
-  // Gearbox for the DC motor.
-  private final DCMotor m_gearbox;
+/**
+ * Represents a simulated gearbox driving a rotational mechanism.
+ *
+ * <p>Positions, velocities and torques are those of the gearbox's output shaft; current draw is the
+ * total across all of its motors.
+ */
+public class GearboxSim extends LinearSystemSim<N2, N1, N2> {
+  // Gearbox for the sim.
+  private final Gearbox m_gearbox;
 
-  // The gearing from the motors to the output.
-  private final double m_gearing;
-
-  // The moment of inertia for the DC motor mechanism in kg-m².
+  // The moment of inertia of the driven mechanism in kg-m².
   private final double m_j;
 
   /**
-   * Creates a simulated DC motor mechanism.
+   * Creates a simulated gearbox.
    *
-   * @param plant The linear system representing the DC motor. This system can be created with
-   *     {@link org.wpilib.math.system.Models#singleJointedArmFromPhysicalConstants(DCMotor, double,
+   * @param plant The linear system representing the mechanism. This system can be created with
+   *     {@link org.wpilib.math.system.Models#singleJointedArmFromPhysicalConstants(Gearbox,
    *     double)} or {@link org.wpilib.math.system.Models#singleJointedArmFromSysId(double,
-   *     double)}.
-   * @param gearbox The type of and number of motors in the DC motor gearbox.
+   *     double)}. It must have been built with the same reduction as {@code gearbox}.
+   * @param gearbox The gearbox driving the mechanism.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 2 elements. The first element is for position. The
    *     second element is for velocity.
    */
-  public DCMotorSim(LinearSystem<N2, N1, N2> plant, DCMotor gearbox, double... measurementStdDevs) {
+  public GearboxSim(LinearSystem<N2, N1, N2> plant, Gearbox gearbox, double... measurementStdDevs) {
     super(plant, measurementStdDevs);
     m_gearbox = gearbox;
 
@@ -45,21 +47,23 @@ public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
     //   A = -G²Kₜ/(KᵥRJ)
     //   B = GKₜ/(RJ)
     //
-    // Solve for G.
-    //
-    //   A/B = -G/Kᵥ
-    //   G = -KᵥA/B
-    //
     // Solve for J.
     //
     //   B = GKₜ/(RJ)
     //   J = GKₜ/(RB)
-    m_gearing = -gearbox.Kv * plant.getA(1, 1) / plant.getB(1, 0);
-    m_j = m_gearing * gearbox.Kt / (gearbox.R * plant.getB(1, 0));
+    //
+    // Kₜ here is that of the gearbox as a whole, so it scales with the number of
+    // motors. G is taken from the gearbox, so the plant must have been built with
+    // the same reduction.
+    m_j =
+        gearbox.reduction
+            * gearbox.numMotors
+            * gearbox.motor.Kt
+            / (gearbox.motor.R * plant.getB(1, 0));
   }
 
   /**
-   * Sets the state of the DC motor.
+   * Sets the state of the gearbox.
    *
    * @param angularPosition The new position in radians.
    * @param angularVelocity The new velocity in radians per second.
@@ -69,7 +73,7 @@ public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Sets the DC motor's angular position.
+   * Sets the gearbox's angular position.
    *
    * @param angularPosition The new position in radians.
    */
@@ -78,7 +82,7 @@ public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Sets the DC motor's angular velocity.
+   * Sets the gearbox's angular velocity.
    *
    * @param angularVelocity The new velocity in radians per second.
    */
@@ -87,54 +91,45 @@ public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns the gear ratio of the DC motor.
+   * Returns the moment of inertia of the driven mechanism.
    *
-   * @return the DC motor's gear ratio.
-   */
-  public double getGearing() {
-    return m_gearing;
-  }
-
-  /**
-   * Returns the moment of inertia of the DC motor.
-   *
-   * @return The DC motor's moment of inertia in kg-m².
+   * @return The mechanism's moment of inertia in kg-m².
    */
   public double getJ() {
     return m_j;
   }
 
   /**
-   * Returns the gearbox for the DC motor.
+   * Returns the gearbox.
    *
-   * @return The DC motor's gearbox.
+   * @return The gearbox.
    */
-  public DCMotor getGearbox() {
+  public Gearbox getGearbox() {
     return m_gearbox;
   }
 
   /**
-   * Returns the DC motor's position.
+   * Returns the gearbox's angular position.
    *
-   * @return The DC motor's position in radians.
+   * @return The gearbox's position in radians.
    */
   public double getAngularPosition() {
     return getOutput(0);
   }
 
   /**
-   * Returns the DC motor's velocity.
+   * Returns the gearbox's angular velocity.
    *
-   * @return The DC motor's velocity in radians per second.
+   * @return The gearbox's velocity in radians per second.
    */
   public double getAngularVelocity() {
     return getOutput(1);
   }
 
   /**
-   * Returns the DC motor's acceleration.
+   * Returns the gearbox's angular acceleration.
    *
-   * @return The DC motor's acceleration in rad/s².
+   * @return The gearbox's acceleration in rad/s².
    */
   public double getAngularAcceleration() {
     var acceleration = (m_plant.getA().times(m_x)).plus(m_plant.getB().times(m_u));
@@ -142,38 +137,36 @@ public class DCMotorSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns the DC motor's torque in.
+   * Returns the torque at the gearbox's output.
    *
-   * @return The DC motor's torque in Newton-meters.
+   * @return The output torque in Newton-meters.
    */
   public double getTorque() {
     return getAngularAcceleration() * m_j;
   }
 
   /**
-   * Returns the DC motor's current draw.
+   * Returns the total current drawn by the gearbox's motors.
    *
-   * @return The DC motor's current draw in amps.
+   * @return The gearbox's current draw in amps.
    */
   public double getCurrentDraw() {
-    // I = V / R - omega / (Kv * R)
-    // Reductions are output over input, so a reduction of 2:1 means the motor is spinning
-    // 2x faster than the output
-    return m_gearbox.getCurrent(m_x.get(1, 0) * m_gearing, m_u.get(0, 0))
-        * Math.signum(m_u.get(0, 0));
+    // Gearbox.getCurrent() takes the velocity of the output and applies the reduction
+    // internally to get the motor velocity, and returns the total across all the motors.
+    return m_gearbox.getCurrent(m_x.get(1, 0), m_u.get(0, 0)) * Math.signum(m_u.get(0, 0));
   }
 
   /**
-   * Gets the input voltage for the DC motor.
+   * Gets the input voltage for the gearbox.
    *
-   * @return The DC motor's input voltage.
+   * @return The gearbox's input voltage.
    */
   public double getInputVoltage() {
     return getInput(0);
   }
 
   /**
-   * Sets the input voltage for the DC motor.
+   * Sets the input voltage for the gearbox.
    *
    * @param volts The input voltage.
    */

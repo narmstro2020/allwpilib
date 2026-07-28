@@ -13,19 +13,19 @@ import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.system.RobotController;
 
-class DCMotorSimTest {
+class GearboxSimTest {
   @Test
   void testVoltageSteadyState() {
     RoboRioSim.resetData();
 
-    DCMotor gearbox = DCMotor.getNEO(1);
-    LinearSystem<N2, N1, N2> plant =
-        Models.singleJointedArmFromPhysicalConstants(gearbox, 0.0005, 1);
-    DCMotorSim sim = new DCMotorSim(plant, gearbox);
+    Gearbox gearbox = new Gearbox(DCMotor.kNEO, 1, 1);
+    LinearSystem<N2, N1, N2> plant = Models.singleJointedArmFromPhysicalConstants(gearbox, 0.0005);
+    GearboxSim sim = new GearboxSim(plant, gearbox);
 
     try (var motor = new PWMVictorSPX(0);
         var encoder = new Encoder(0, 1)) {
@@ -43,7 +43,7 @@ class DCMotorSimTest {
         encoderSim.setRate(sim.getAngularVelocity());
       }
 
-      assertEquals(gearbox.Kv * 12, encoder.getRate(), 0.1);
+      assertEquals(gearbox.motor.Kv * 12, encoder.getRate(), 0.1);
 
       for (int i = 0; i < 100; i++) {
         motor.setVoltage(0);
@@ -64,10 +64,9 @@ class DCMotorSimTest {
   void testPositionFeedbackControl() {
     RoboRioSim.resetData();
 
-    DCMotor gearbox = DCMotor.getNEO(1);
-    LinearSystem<N2, N1, N2> plant =
-        Models.singleJointedArmFromPhysicalConstants(gearbox, 0.0005, 1);
-    DCMotorSim sim = new DCMotorSim(plant, gearbox);
+    Gearbox gearbox = new Gearbox(DCMotor.kNEO, 1, 1);
+    LinearSystem<N2, N1, N2> plant = Models.singleJointedArmFromPhysicalConstants(gearbox, 0.0005);
+    GearboxSim sim = new GearboxSim(plant, gearbox);
 
     try (var motor = new PWMVictorSPX(0);
         var encoder = new Encoder(0, 1);
@@ -90,5 +89,28 @@ class DCMotorSimTest {
       assertEquals(750, encoder.getDistance(), 1.0);
       assertEquals(0, encoder.getRate(), 0.1);
     }
+  }
+
+  @Test
+  void testCurrentDrawScalesWithMotorCount() {
+    // Current draw is the total across the gearbox's motors, so doubling the motor
+    // count while holding the mechanism identical should double the stall current.
+    double j = 0.0005;
+    double reduction = 3.0;
+
+    var oneMotor = new Gearbox(DCMotor.kNEO, 1, reduction);
+    var twoMotors = new Gearbox(DCMotor.kNEO, 2, reduction);
+
+    var oneMotorSim =
+        new GearboxSim(Models.singleJointedArmFromPhysicalConstants(oneMotor, j), oneMotor);
+    var twoMotorSim =
+        new GearboxSim(Models.singleJointedArmFromPhysicalConstants(twoMotors, j), twoMotors);
+
+    // At rest, current draw is the stall current at the applied voltage.
+    oneMotorSim.setInput(12.0);
+    twoMotorSim.setInput(12.0);
+
+    assertEquals(DCMotor.kNEO.getCurrent(0.0, 12.0), oneMotorSim.getCurrentDraw(), 1e-9);
+    assertEquals(2.0 * oneMotorSim.getCurrentDraw(), twoMotorSim.getCurrentDraw(), 1e-9);
   }
 }
