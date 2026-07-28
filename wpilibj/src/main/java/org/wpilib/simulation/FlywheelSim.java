@@ -6,18 +6,20 @@ package org.wpilib.simulation;
 
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
-import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.system.RobotController;
 
-/** Represents a simulated flywheel mechanism. */
+/**
+ * Represents a simulated flywheel mechanism.
+ *
+ * <p>Velocities and torques are those of the flywheel itself; current draw is the total across all
+ * of the gearbox's motors.
+ */
 public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
   // Gearbox for the flywheel.
-  private final DCMotor m_gearbox;
-
-  // The gearing from the motors to the output.
-  private final double m_gearing;
+  private final Gearbox m_gearbox;
 
   // The moment of inertia for the flywheel mechanism.
   private final double m_j;
@@ -26,14 +28,15 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
    * Creates a simulated flywheel mechanism.
    *
    * @param plant The linear system that represents the flywheel. Use either {@link
-   *     Models#flywheelFromPhysicalConstants(DCMotor, double, double)} if using physical constants
-   *     or {@link Models#flywheelFromSysId(double, double)} if using system characterization.
-   * @param gearbox The type of and number of motors in the flywheel gearbox.
+   *     Models#flywheelFromPhysicalConstants(Gearbox, double)} if using physical constants or
+   *     {@link Models#flywheelFromSysId(double, double)} if using system characterization. It must
+   *     have been built with the same reduction as {@code gearbox}.
+   * @param gearbox The gearbox driving the flywheel.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 1 element for velocity.
    */
   public FlywheelSim(
-      LinearSystem<N1, N1, N1> plant, DCMotor gearbox, double... measurementStdDevs) {
+      LinearSystem<N1, N1, N1> plant, Gearbox gearbox, double... measurementStdDevs) {
     super(plant, measurementStdDevs);
     m_gearbox = gearbox;
 
@@ -44,17 +47,19 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
     //   A = -G²Kₜ/(KᵥRJ)
     //   B = GKₜ/(RJ)
     //
-    // Solve for G.
-    //
-    //   A/B = -G/Kᵥ
-    //   G = -KᵥA/B
-    //
     // Solve for J.
     //
     //   B = GKₜ/(RJ)
     //   J = GKₜ/(RB)
-    m_gearing = -gearbox.Kv * plant.getA(0, 0) / plant.getB(0, 0);
-    m_j = m_gearing * gearbox.Kt / (gearbox.R * plant.getB(0, 0));
+    //
+    // Kₜ here is that of the gearbox as a whole, so it scales with the number of
+    // motors. G is taken from the gearbox, so the plant must have been built with
+    // the same reduction.
+    m_j =
+        gearbox.reduction
+            * gearbox.numMotors
+            * gearbox.motor.Kt
+            / (gearbox.motor.R * plant.getB(0, 0));
   }
 
   /**
@@ -64,15 +69,6 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
    */
   public void setAngularVelocity(double velocity) {
     setState(VecBuilder.fill(velocity));
-  }
-
-  /**
-   * Returns the gear ratio of the flywheel.
-   *
-   * @return the flywheel's gear ratio.
-   */
-  public double getGearing() {
-    return m_gearing;
   }
 
   /**
@@ -89,7 +85,7 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
    *
    * @return The flywheel's gearbox.
    */
-  public DCMotor getGearbox() {
+  public Gearbox getGearbox() {
     return m_gearbox;
   }
 
@@ -122,16 +118,14 @@ public class FlywheelSim extends LinearSystemSim<N1, N1, N1> {
   }
 
   /**
-   * Returns the flywheel's current draw.
+   * Returns the total current drawn by the gearbox's motors.
    *
    * @return The flywheel's current draw in amps.
    */
   public double getCurrentDraw() {
-    // I = V / R - omega / (Kv * R)
-    // Reductions are output over input, so a reduction of 2:1 means the motor is spinning
-    // 2x faster than the flywheel
-    return m_gearbox.getCurrent(m_x.get(0, 0) * m_gearing, m_u.get(0, 0))
-        * Math.signum(m_u.get(0, 0));
+    // Gearbox.getCurrent() takes the velocity of the output and applies the reduction
+    // internally to get the motor velocity, and returns the total across all the motors.
+    return m_gearbox.getCurrent(m_x.get(0, 0), m_u.get(0, 0)) * Math.signum(m_u.get(0, 0));
   }
 
   /**
