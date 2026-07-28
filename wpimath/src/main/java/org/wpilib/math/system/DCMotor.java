@@ -10,7 +10,12 @@ import org.wpilib.math.util.Units;
 import org.wpilib.util.protobuf.ProtobufSerializable;
 import org.wpilib.util.struct.StructSerializable;
 
-/** Holds the constants for a DC motor. */
+/**
+ * Holds the constants for a single DC motor.
+ *
+ * <p>This describes the motor itself and nothing about how it is installed. To model a number of
+ * these motors driving a mechanism through a gear reduction, wrap this in a {@link Gearbox}.
+ */
 public class DCMotor implements ProtobufSerializable, StructSerializable {
   /** Voltage at which the motor constants were measured. */
   public final double nominalVoltage;
@@ -42,6 +47,122 @@ public class DCMotor implements ProtobufSerializable, StructSerializable {
   /** DCMotor struct for serialization. */
   public static final DCMotorStruct struct = new DCMotorStruct();
 
+  /** A CIM motor. */
+  public static final DCMotor kCIM =
+      new DCMotor(12, 2.42, 133, 2.7, Units.rotationsPerMinuteToRadiansPerSecond(5310));
+
+  /** A MiniCIM motor. */
+  public static final DCMotor kMiniCIM =
+      new DCMotor(12, 1.41, 89, 3, Units.rotationsPerMinuteToRadiansPerSecond(5840));
+
+  /** A Bag motor. */
+  public static final DCMotor kBag =
+      new DCMotor(12, 0.43, 53, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(13180));
+
+  /** A 775Pro motor. */
+  public static final DCMotor kVex775Pro =
+      new DCMotor(12, 0.71, 134, 0.7, Units.rotationsPerMinuteToRadiansPerSecond(18730));
+
+  /** An Andymark RS775-125 motor. */
+  public static final DCMotor kAndymarkRs775_125 =
+      new DCMotor(12, 0.28, 18, 1.6, Units.rotationsPerMinuteToRadiansPerSecond(5800.0));
+
+  /** A Banebots RS775 motor. */
+  public static final DCMotor kBanebotsRs775 =
+      new DCMotor(12, 0.72, 97, 2.7, Units.rotationsPerMinuteToRadiansPerSecond(13050.0));
+
+  /** An Andymark 9015 motor. */
+  public static final DCMotor kAndymark9015 =
+      new DCMotor(12, 0.36, 71, 3.7, Units.rotationsPerMinuteToRadiansPerSecond(14270.0));
+
+  /** A Banebots RS 550 motor. */
+  public static final DCMotor kBanebotsRs550 =
+      new DCMotor(12, 0.38, 84, 0.4, Units.rotationsPerMinuteToRadiansPerSecond(19000.0));
+
+  /** A NEO motor. */
+  public static final DCMotor kNEO =
+      new DCMotor(12, 2.6, 105, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(5676));
+
+  /** A NEO 550 motor. */
+  public static final DCMotor kNeo550 =
+      new DCMotor(12, 0.97, 100, 1.4, Units.rotationsPerMinuteToRadiansPerSecond(11000.0));
+
+  /** A Falcon 500 motor. */
+  public static final DCMotor kFalcon500 =
+      new DCMotor(12, 4.69, 257, 1.5, Units.rotationsPerMinuteToRadiansPerSecond(6380.0));
+
+  /**
+   * A Falcon 500 motor with FOC (Field-Oriented Control) enabled.
+   *
+   * @see <a
+   *     href="https://store.ctr-electronics.com/falcon-500-powered-by-talon-fx/">https://store.ctr-electronics.com/falcon-500-powered-by-talon-fx/</a>
+   */
+  public static final DCMotor kFalcon500Foc =
+      new DCMotor(12, 5.84, 304, 1.5, Units.rotationsPerMinuteToRadiansPerSecond(6080.0));
+
+  /**
+   * A Romi/TI_RSLK MAX motor.
+   *
+   * @see <a
+   *     href="https://www.pololu.com/product/1520/specs">https://www.pololu.com/product/1520/specs</a>
+   */
+  public static final DCMotor kRomiBuiltIn =
+      new DCMotor(4.5, 0.1765, 1.25, 0.13, Units.rotationsPerMinuteToRadiansPerSecond(150.0));
+
+  /**
+   * A Kraken X60 brushless motor.
+   *
+   * @see <a
+   *     href="https://store.ctr-electronics.com/announcing-kraken-x60/">https://store.ctr-electronics.com/announcing-kraken-x60/</a>
+   */
+  public static final DCMotor kKrakenX60 =
+      new DCMotor(12, 7.09, 366, 2, Units.rotationsPerMinuteToRadiansPerSecond(6000));
+
+  /**
+   * A Kraken X60 brushless motor with FOC (Field-Oriented Control) enabled.
+   *
+   * @see <a
+   *     href="https://store.ctr-electronics.com/announcing-kraken-x60/">https://store.ctr-electronics.com/announcing-kraken-x60/</a>
+   */
+  public static final DCMotor kKrakenX60Foc =
+      new DCMotor(12, 9.37, 483, 2, Units.rotationsPerMinuteToRadiansPerSecond(5800));
+
+  /**
+   * A Kraken X44 brushless motor.
+   *
+   * @see <a
+   *     href="https://motors.ctr-electronics.com/dyno/dynometer-testing/">https://motors.ctr-electronics.com/dyno/dynometer-testing/</a>
+   */
+  public static final DCMotor kKrakenX44 =
+      new DCMotor(12, 4.11, 279, 2, Units.rotationsPerMinuteToRadiansPerSecond(7758));
+
+  /**
+   * A Kraken X44 brushless motor with FOC (Field-Oriented Control) enabled.
+   *
+   * @see <a
+   *     href="https://motors.ctr-electronics.com/dyno/dynometer-testing/">https://motors.ctr-electronics.com/dyno/dynometer-testing/</a>
+   */
+  public static final DCMotor kKrakenX44Foc =
+      new DCMotor(12, 5.01, 329, 2, Units.rotationsPerMinuteToRadiansPerSecond(7368));
+
+  /**
+   * A Minion brushless motor.
+   *
+   * @see <a
+   *     href="https://motors.ctr-electronics.com/dyno/dynometer-testing/">https://motors.ctr-electronics.com/dyno/dynometer-testing/</a>
+   */
+  public static final DCMotor kMinion =
+      new DCMotor(12, 3.17, 211, 2, Units.rotationsPerMinuteToRadiansPerSecond(7704));
+
+  /**
+   * A Neo Vortex brushless motor.
+   *
+   * @see <a
+   *     href="https://www.revrobotics.com/next-generation-spark-neo/">https://www.revrobotics.com/next-generation-spark-neo/</a>
+   */
+  public static final DCMotor kNeoVortex =
+      new DCMotor(12, 3.60, 211, 3.6, Units.rotationsPerMinuteToRadiansPerSecond(6784));
+
   /**
    * Constructs a DC motor.
    *
@@ -50,42 +171,40 @@ public class DCMotor implements ProtobufSerializable, StructSerializable {
    * @param stallCurrent Current draw when stalled.
    * @param freeCurrent Current draw under no load.
    * @param freeSpeed Angular velocity under no load.
-   * @param numMotors Number of motors in a gearbox.
    */
   public DCMotor(
       double nominalVoltage,
       double stallTorque,
       double stallCurrent,
       double freeCurrent,
-      double freeSpeed,
-      int numMotors) {
+      double freeSpeed) {
     this.nominalVoltage = nominalVoltage;
-    this.stallTorque = stallTorque * numMotors;
-    this.stallCurrent = stallCurrent * numMotors;
-    this.freeCurrent = freeCurrent * numMotors;
+    this.stallTorque = stallTorque;
+    this.stallCurrent = stallCurrent;
+    this.freeCurrent = freeCurrent;
     this.freeSpeed = freeSpeed;
 
-    this.R = nominalVoltage / this.stallCurrent;
-    this.Kv = freeSpeed / (nominalVoltage - R * this.freeCurrent);
-    this.Kt = this.stallTorque / this.stallCurrent;
+    this.R = nominalVoltage / stallCurrent;
+    this.Kv = freeSpeed / (nominalVoltage - R * freeCurrent);
+    this.Kt = stallTorque / stallCurrent;
   }
 
   /**
-   * Calculate current drawn by motor with given velocity and input voltage.
+   * Calculate current drawn by the motor with given velocity and input voltage.
    *
-   * @param velocity The current angular velocity of the motor.
+   * @param velocity The current angular velocity of the motor in radians per second.
    * @param voltageInput The voltage being applied to the motor.
-   * @return The estimated current.
+   * @return The estimated current in amps.
    */
   public double getCurrent(double velocity, double voltageInput) {
     return -1.0 / Kv / R * velocity + 1.0 / R * voltageInput;
   }
 
   /**
-   * Calculate current drawn by motor for a given torque.
+   * Calculate current drawn by the motor for a given torque.
    *
    * @param torque The torque produced by the motor in Newton-meters.
-   * @return The current drawn by the motor.
+   * @return The current drawn by the motor in amps.
    */
   public double getCurrent(double torque) {
     return torque / Kt;
@@ -117,242 +236,9 @@ public class DCMotor implements ProtobufSerializable, StructSerializable {
    *
    * @param torque The torque produced by the motor in Newton-meters.
    * @param voltageInput The voltage applied to the motor.
-   * @return The angular velocity of the motor.
+   * @return The angular velocity of the motor in radians per second.
    */
   public double getVelocity(double torque, double voltageInput) {
     return voltageInput * Kv - 1.0 / Kt * torque * R * Kv;
-  }
-
-  /**
-   * Returns a copy of this motor with the given gearbox reduction applied.
-   *
-   * @param gearboxReduction The gearbox reduction.
-   * @return A motor with the gearbox reduction applied.
-   */
-  public DCMotor withReduction(double gearboxReduction) {
-    return new DCMotor(
-        nominalVoltage,
-        stallTorque * gearboxReduction,
-        stallCurrent,
-        freeCurrent,
-        freeSpeed / gearboxReduction,
-        1);
-  }
-
-  /**
-   * Return a gearbox of CIM motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of CIM motors.
-   */
-  public static DCMotor getCIM(int numMotors) {
-    return new DCMotor(
-        12, 2.42, 133, 2.7, Units.rotationsPerMinuteToRadiansPerSecond(5310), numMotors);
-  }
-
-  /**
-   * Return a gearbox of 775Pro motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of 775Pro motors.
-   */
-  public static DCMotor getVex775Pro(int numMotors) {
-    return new DCMotor(
-        12, 0.71, 134, 0.7, Units.rotationsPerMinuteToRadiansPerSecond(18730), numMotors);
-  }
-
-  /**
-   * Return a gearbox of NEO motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of NEO motors.
-   */
-  public static DCMotor getNEO(int numMotors) {
-    return new DCMotor(
-        12, 2.6, 105, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(5676), numMotors);
-  }
-
-  /**
-   * Return a gearbox of MiniCIM motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of MiniCIM motors.
-   */
-  public static DCMotor getMiniCIM(int numMotors) {
-    return new DCMotor(
-        12, 1.41, 89, 3, Units.rotationsPerMinuteToRadiansPerSecond(5840), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Bag motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Bag motors.
-   */
-  public static DCMotor getBag(int numMotors) {
-    return new DCMotor(
-        12, 0.43, 53, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(13180), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Andymark RS775-125 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Andymark RS775-125 motors.
-   */
-  public static DCMotor getAndymarkRs775_125(int numMotors) {
-    return new DCMotor(
-        12, 0.28, 18, 1.6, Units.rotationsPerMinuteToRadiansPerSecond(5800.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Banebots RS775 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Banebots RS775 motors.
-   */
-  public static DCMotor getBanebotsRs775(int numMotors) {
-    return new DCMotor(
-        12, 0.72, 97, 2.7, Units.rotationsPerMinuteToRadiansPerSecond(13050.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Andymark 9015 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Andymark 9015 motors.
-   */
-  public static DCMotor getAndymark9015(int numMotors) {
-    return new DCMotor(
-        12, 0.36, 71, 3.7, Units.rotationsPerMinuteToRadiansPerSecond(14270.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Banebots RS 550 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Banebots RS 550 motors.
-   */
-  public static DCMotor getBanebotsRs550(int numMotors) {
-    return new DCMotor(
-        12, 0.38, 84, 0.4, Units.rotationsPerMinuteToRadiansPerSecond(19000.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of NEO 550 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of NEO 550 motors.
-   */
-  public static DCMotor getNeo550(int numMotors) {
-    return new DCMotor(
-        12, 0.97, 100, 1.4, Units.rotationsPerMinuteToRadiansPerSecond(11000.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Falcon 500 motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Falcon 500 motors.
-   */
-  public static DCMotor getFalcon500(int numMotors) {
-    return new DCMotor(
-        12, 4.69, 257, 1.5, Units.rotationsPerMinuteToRadiansPerSecond(6380.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Falcon 500 motors with FOC (Field-Oriented Control) enabled.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Falcon 500 FOC enabled motors.
-   */
-  public static DCMotor getFalcon500Foc(int numMotors) {
-    // https://store.ctr-electronics.com/falcon-500-powered-by-talon-fx/
-    return new DCMotor(
-        12, 5.84, 304, 1.5, Units.rotationsPerMinuteToRadiansPerSecond(6080.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Romi/TI_RSLK MAX motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Romi/TI_RSLK MAX motors.
-   */
-  public static DCMotor getRomiBuiltIn(int numMotors) {
-    // From https://www.pololu.com/product/1520/specs
-    return new DCMotor(
-        4.5, 0.1765, 1.25, 0.13, Units.rotationsPerMinuteToRadiansPerSecond(150.0), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Kraken X60 brushless motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return a gearbox of Kraken X60 motors.
-   */
-  public static DCMotor getKrakenX60(int numMotors) {
-    // From https://store.ctr-electronics.com/announcing-kraken-x60/
-    return new DCMotor(
-        12, 7.09, 366, 2, Units.rotationsPerMinuteToRadiansPerSecond(6000), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Kraken X60 brushless motors with FOC (Field-Oriented Control) enabled.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Kraken X60 FOC enabled motors.
-   */
-  public static DCMotor getKrakenX60Foc(int numMotors) {
-    // From https://store.ctr-electronics.com/announcing-kraken-x60/
-    return new DCMotor(
-        12, 9.37, 483, 2, Units.rotationsPerMinuteToRadiansPerSecond(5800), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Kraken X44 brushless motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return a gearbox of Kraken X44 motors.
-   */
-  public static DCMotor getKrakenX44(int numMotors) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return new DCMotor(
-        12, 4.11, 279, 2, Units.rotationsPerMinuteToRadiansPerSecond(7758), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Kraken X44 brushless motors with FOC (Field-Oriented Control) enabled.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Kraken X44 FOC enabled motors.
-   */
-  public static DCMotor getKrakenX44Foc(int numMotors) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return new DCMotor(
-        12, 5.01, 329, 2, Units.rotationsPerMinuteToRadiansPerSecond(7368), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Minion brushless motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return A gearbox of Minion motors.
-   */
-  public static DCMotor getMinion(int numMotors) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return new DCMotor(
-        12, 3.17, 211, 2, Units.rotationsPerMinuteToRadiansPerSecond(7704), numMotors);
-  }
-
-  /**
-   * Return a gearbox of Neo Vortex brushless motors.
-   *
-   * @param numMotors Number of motors in the gearbox.
-   * @return a gearbox of Neo Vortex motors.
-   */
-  public static DCMotor getNeoVortex(int numMotors) {
-    // From https://www.revrobotics.com/next-generation-spark-neo/
-    return new DCMotor(
-        12, 3.60, 211, 3.6, Units.rotationsPerMinuteToRadiansPerSecond(6784), numMotors);
   }
 }
