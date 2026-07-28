@@ -17,31 +17,29 @@ using namespace wpi::sim;
 
 SingleJointedArmSim::SingleJointedArmSim(
     const wpi::math::LinearSystem<2, 1, 2>& system,
-    const wpi::math::DCMotor& gearbox, double gearing,
-    wpi::units::meter_t armLength, wpi::units::radian_t minAngle,
-    wpi::units::radian_t maxAngle, bool simulateGravity,
-    wpi::units::radian_t startingAngle,
+    const wpi::math::Gearbox& gearbox, wpi::units::meter_t armLength,
+    wpi::units::radian_t minAngle, wpi::units::radian_t maxAngle,
+    bool simulateGravity, wpi::units::radian_t startingAngle,
     const std::array<double, 2>& measurementStdDevs)
     : LinearSystemSim<2, 1, 2>(system, measurementStdDevs),
       m_armLen(armLength),
       m_minAngle(minAngle),
       m_maxAngle(maxAngle),
       m_gearbox(gearbox),
-      m_gearing(gearing),
       m_simulateGravity(simulateGravity) {
   SetState(startingAngle, 0_rad_per_s);
 }
 
 SingleJointedArmSim::SingleJointedArmSim(
-    const wpi::math::DCMotor& gearbox, double gearing,
-    wpi::units::kilogram_square_meter_t moi, wpi::units::meter_t armLength,
-    wpi::units::radian_t minAngle, wpi::units::radian_t maxAngle,
-    bool simulateGravity, wpi::units::radian_t startingAngle,
+    const wpi::math::Gearbox& gearbox, wpi::units::kilogram_square_meter_t moi,
+    wpi::units::meter_t armLength, wpi::units::radian_t minAngle,
+    wpi::units::radian_t maxAngle, bool simulateGravity,
+    wpi::units::radian_t startingAngle,
     const std::array<double, 2>& measurementStdDevs)
     : SingleJointedArmSim(
-          wpi::math::Models::SingleJointedArmFromPhysicalConstants(gearbox, moi,
-                                                                   gearing),
-          gearbox, gearing, armLength, minAngle, maxAngle, simulateGravity,
+          wpi::math::Models::SingleJointedArmFromPhysicalConstants(gearbox,
+                                                                   moi),
+          gearbox, armLength, minAngle, maxAngle, simulateGravity,
           startingAngle, measurementStdDevs) {}
 
 void SingleJointedArmSim::SetState(wpi::units::radian_t angle,
@@ -77,10 +75,10 @@ wpi::units::radians_per_second_t SingleJointedArmSim::GetVelocity() const {
 }
 
 wpi::units::ampere_t SingleJointedArmSim::GetCurrentDraw() const {
-  // Reductions are greater than 1, so a reduction of 10:1 would mean the motor
-  // is spinning 10x faster than the output
-  wpi::units::radians_per_second_t motorVelocity{m_x(1) * m_gearing};
-  return m_gearbox.Current(motorVelocity, wpi::units::volt_t{m_u(0)}) *
+  // Gearbox::Current() takes the velocity of the output, and applies the
+  // reduction internally to get the motor velocity.
+  return m_gearbox.Current(wpi::units::radians_per_second_t{m_x(1)},
+                           wpi::units::volt_t{m_u(0)}) *
          wpi::util::sgn(m_u(0));
 }
 

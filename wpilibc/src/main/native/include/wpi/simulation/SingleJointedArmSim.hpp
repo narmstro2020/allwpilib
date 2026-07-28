@@ -6,7 +6,7 @@
 
 #include <array>
 
-#include "wpi/math/system/DCMotor.hpp"
+#include "wpi/math/system/Gearbox.hpp"
 #include "wpi/simulation/LinearSystemSim.hpp"
 #include "wpi/units/angle.hpp"
 #include "wpi/units/length.hpp"
@@ -24,9 +24,7 @@ class SingleJointedArmSim : public LinearSystemSim<2, 1, 2> {
    *
    * @param system The system representing this arm. This system can be created
    *     with wpi::math::Models::SingleJointedArmFromPhysicalConstants().
-   * @param gearbox The type and number of motors on the arm gearbox.
-   * @param gearing The gear ratio of the arm (numbers greater than 1 represent
-   *     reductions).
+   * @param gearbox The gearbox driving the arm.
    * @param armLength The length of the arm.
    * @param minAngle The minimum angle that the arm is capable of, with 0 being
    *     horizontal.
@@ -36,20 +34,16 @@ class SingleJointedArmSim : public LinearSystemSim<2, 1, 2> {
    * @param startingAngle The initial position of the arm.
    * @param measurementStdDevs The standard deviations of the measurements.
    */
-  SingleJointedArmSim(const wpi::math::LinearSystem<2, 1, 2>& system,
-                      const wpi::math::DCMotor& gearbox, double gearing,
-                      wpi::units::meter_t armLength,
-                      wpi::units::radian_t minAngle,
-                      wpi::units::radian_t maxAngle, bool simulateGravity,
-                      wpi::units::radian_t startingAngle,
-                      const std::array<double, 2>& measurementStdDevs = {0.0,
-                                                                         0.0});
+  SingleJointedArmSim(
+      const wpi::math::LinearSystem<2, 1, 2>& system,
+      const wpi::math::Gearbox& gearbox, wpi::units::meter_t armLength,
+      wpi::units::radian_t minAngle, wpi::units::radian_t maxAngle,
+      bool simulateGravity, wpi::units::radian_t startingAngle,
+      const std::array<double, 2>& measurementStdDevs = {0.0, 0.0});
   /**
    * Creates a simulated arm mechanism.
    *
-   * @param gearbox The type and number of motors on the arm gearbox.
-   * @param gearing The gear ratio of the arm (numbers greater than 1 represent
-   *     reductions).
+   * @param gearbox The gearbox driving the arm.
    * @param moi The moment of inertia of the arm. This can be calculated from
    *     CAD software.
    * @param armLength The length of the arm.
@@ -62,7 +56,7 @@ class SingleJointedArmSim : public LinearSystemSim<2, 1, 2> {
    * @param measurementStdDevs The standard deviation of the measurement noise.
    */
   SingleJointedArmSim(
-      const wpi::math::DCMotor& gearbox, double gearing,
+      const wpi::math::Gearbox& gearbox,
       wpi::units::kilogram_square_meter_t moi, wpi::units::meter_t armLength,
       wpi::units::radian_t minAngle, wpi::units::radian_t maxAngle,
       bool simulateGravity, wpi::units::radian_t startingAngle,
@@ -168,8 +162,7 @@ class SingleJointedArmSim : public LinearSystemSim<2, 1, 2> {
   wpi::units::meter_t m_armLen;
   wpi::units::radian_t m_minAngle;
   wpi::units::radian_t m_maxAngle;
-  const wpi::math::DCMotor m_gearbox;
-  double m_gearing;
+  const wpi::math::Gearbox m_gearbox;
   bool m_simulateGravity;
 };
 }  // namespace wpi::sim
