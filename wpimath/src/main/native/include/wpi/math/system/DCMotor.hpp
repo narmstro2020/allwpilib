@@ -15,7 +15,11 @@
 namespace wpi::math {
 
 /**
- * Holds the constants for a DC motor.
+ * Holds the constants for a single DC motor.
+ *
+ * This describes the motor itself and nothing about how it is installed. To
+ * model a number of these motors driving a mechanism through a gear reduction,
+ * wrap this in a Gearbox.
  */
 class WPILIB_DLLEXPORT DCMotor {
  public:
@@ -58,25 +62,23 @@ class WPILIB_DLLEXPORT DCMotor {
    * @param stallCurrent Current draw when stalled.
    * @param freeCurrent Current draw under no load.
    * @param freeSpeed Angular velocity under no load.
-   * @param numMotors Number of motors in a gearbox.
    */
   constexpr DCMotor(wpi::units::volt_t nominalVoltage,
                     wpi::units::newton_meter_t stallTorque,
                     wpi::units::ampere_t stallCurrent,
                     wpi::units::ampere_t freeCurrent,
-                    wpi::units::radians_per_second_t freeSpeed,
-                    int numMotors = 1)
+                    wpi::units::radians_per_second_t freeSpeed)
       : nominalVoltage(nominalVoltage),
-        stallTorque(stallTorque * numMotors),
-        stallCurrent(stallCurrent * numMotors),
-        freeCurrent(freeCurrent * numMotors),
+        stallTorque(stallTorque),
+        stallCurrent(stallCurrent),
+        freeCurrent(freeCurrent),
         freeSpeed(freeSpeed),
-        R(nominalVoltage / this->stallCurrent),
-        Kv(freeSpeed / (nominalVoltage - R * this->freeCurrent)),
-        Kt(this->stallTorque / this->stallCurrent) {}
+        R(nominalVoltage / stallCurrent),
+        Kv(freeSpeed / (nominalVoltage - R * freeCurrent)),
+        Kt(stallTorque / stallCurrent) {}
 
   /**
-   * Returns current drawn by motor with given velocity and input voltage.
+   * Returns current drawn by the motor with given velocity and input voltage.
    *
    * @param velocity The current angular velocity of the motor.
    * @param inputVoltage The voltage being applied to the motor.
@@ -88,7 +90,7 @@ class WPILIB_DLLEXPORT DCMotor {
   }
 
   /**
-   * Returns current drawn by motor for a given torque.
+   * Returns current drawn by the motor for a given torque.
    *
    * @param torque The torque produced by the motor.
    */
@@ -133,160 +135,149 @@ class WPILIB_DLLEXPORT DCMotor {
     return inputVoltage * Kv - 1.0 / Kt * torque * R * Kv;
   }
 
+  /// A CIM motor.
+  static const DCMotor kCIM;
+
+  /// A MiniCIM motor.
+  static const DCMotor kMiniCIM;
+
+  /// A Bag motor.
+  static const DCMotor kBag;
+
+  /// A Vex 775 Pro motor.
+  static const DCMotor kVex775Pro;
+
+  /// An Andymark RS 775-125 motor.
+  static const DCMotor kRS775_125;
+
+  /// A Banebots RS 775 motor.
+  static const DCMotor kBanebotsRS775;
+
+  /// An Andymark 9015 motor.
+  static const DCMotor kAndymark9015;
+
+  /// A Banebots RS 550 motor.
+  static const DCMotor kBanebotsRS550;
+
+  /// A NEO brushless motor.
+  static const DCMotor kNEO;
+
+  /// A NEO 550 brushless motor.
+  static const DCMotor kNEO550;
+
+  /// A Falcon 500 brushless motor.
+  static const DCMotor kFalcon500;
+
   /**
-   * Returns a copy of this motor with the given gearbox reduction applied.
+   * A Falcon 500 motor with FOC (Field-Oriented Control) enabled.
    *
-   * @param gearboxReduction The gearbox reduction.
+   * @see https://store.ctr-electronics.com/falcon-500-powered-by-talon-fx/
    */
-  constexpr DCMotor WithReduction(double gearboxReduction) {
-    return DCMotor(nominalVoltage, stallTorque * gearboxReduction, stallCurrent,
-                   freeCurrent, freeSpeed / gearboxReduction);
-  }
+  static const DCMotor kFalcon500FOC;
 
   /**
-   * Returns a gearbox of CIM motors.
+   * A Romi/TI_RSLK MAX motor.
+   *
+   * @see https://www.pololu.com/product/1520/specs
    */
-  static constexpr DCMotor CIM(int numMotors = 1) {
-    return DCMotor(12_V, 2.42_Nm, 133_A, 2.7_A, 5310_rpm, numMotors);
-  }
+  static const DCMotor kRomiBuiltIn;
 
   /**
-   * Returns a gearbox of MiniCIM motors.
+   * A Kraken X60 brushless motor.
+   *
+   * @see https://store.ctr-electronics.com/announcing-kraken-x60/
    */
-  static constexpr DCMotor MiniCIM(int numMotors = 1) {
-    return DCMotor(12_V, 1.41_Nm, 89_A, 3_A, 5840_rpm, numMotors);
-  }
+  static const DCMotor kKrakenX60;
 
   /**
-   * Returns a gearbox of Bag motor motors.
-   */
-  static constexpr DCMotor Bag(int numMotors = 1) {
-    return DCMotor(12_V, 0.43_Nm, 53_A, 1.8_A, 13180_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Vex 775 Pro motors.
-   */
-  static constexpr DCMotor Vex775Pro(int numMotors = 1) {
-    return DCMotor(12_V, 0.71_Nm, 134_A, 0.7_A, 18730_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Andymark RS 775-125 motors.
-   */
-  static constexpr DCMotor RS775_125(int numMotors = 1) {
-    return DCMotor(12_V, 0.28_Nm, 18_A, 1.6_A, 5800_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Banebots RS 775 motors.
-   */
-  static constexpr DCMotor BanebotsRS775(int numMotors = 1) {
-    return DCMotor(12_V, 0.72_Nm, 97_A, 2.7_A, 13050_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Andymark 9015 motors.
-   */
-  static constexpr DCMotor Andymark9015(int numMotors = 1) {
-    return DCMotor(12_V, 0.36_Nm, 71_A, 3.7_A, 14270_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Banebots RS 550 motors.
-   */
-  static constexpr DCMotor BanebotsRS550(int numMotors = 1) {
-    return DCMotor(12_V, 0.38_Nm, 84_A, 0.4_A, 19000_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of NEO brushless motors.
-   */
-  static constexpr DCMotor NEO(int numMotors = 1) {
-    return DCMotor(12_V, 2.6_Nm, 105_A, 1.8_A, 5676_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of NEO 550 brushless motors.
-   */
-  static constexpr DCMotor NEO550(int numMotors = 1) {
-    return DCMotor(12_V, 0.97_Nm, 100_A, 1.4_A, 11000_rpm, numMotors);
-  }
-
-  /**
-   * Returns a gearbox of Falcon 500 brushless motors.
-   */
-  static constexpr DCMotor Falcon500(int numMotors = 1) {
-    return DCMotor(12_V, 4.69_Nm, 257_A, 1.5_A, 6380_rpm, numMotors);
-  }
-
-  /**
-   * Return a gearbox of Falcon 500 motors with FOC (Field-Oriented Control)
+   * A Kraken X60 brushless motor with FOC (Field-Oriented Control)
    * enabled.
+   *
+   * @see https://store.ctr-electronics.com/announcing-kraken-x60/
    */
-  static constexpr DCMotor Falcon500FOC(int numMotors = 1) {
-    // https://store.ctr-electronics.com/falcon-500-powered-by-talon-fx/
-    return DCMotor(12_V, 5.84_Nm, 304_A, 1.5_A, 6080_rpm, numMotors);
-  }
+  static const DCMotor kKrakenX60FOC;
 
   /**
-   * Return a gearbox of Romi/TI_RSLK MAX motors.
+   * A Kraken X44 brushless motor.
+   *
+   * @see https://motors.ctr-electronics.com/dyno/dynometer-testing/
    */
-  static constexpr DCMotor RomiBuiltIn(int numMotors = 1) {
-    // From https://www.pololu.com/product/1520/specs
-    return DCMotor(4.5_V, 0.1765_Nm, 1.25_A, 0.13_A, 150_rpm, numMotors);
-  }
+  static const DCMotor kKrakenX44;
 
   /**
-   * Return a gearbox of Kraken X60 brushless motors.
+   * A Kraken X44 brushless motor with FOC (Field-Oriented Control)
+   * enabled.
+   *
+   * @see https://motors.ctr-electronics.com/dyno/dynometer-testing/
    */
-  static constexpr DCMotor KrakenX60(int numMotors = 1) {
-    // From https://store.ctr-electronics.com/announcing-kraken-x60/
-    return DCMotor(12_V, 7.09_Nm, 366_A, 2_A, 6000_rpm, numMotors);
-  }
+  static const DCMotor kKrakenX44FOC;
 
   /**
-   * Return a gearbox of Kraken X60 brushless motors with FOC (Field-Oriented
-   * Control) enabled.
+   * A Minion brushless motor.
+   *
+   * @see https://motors.ctr-electronics.com/dyno/dynometer-testing/
    */
-  static constexpr DCMotor KrakenX60FOC(int numMotors = 1) {
-    // From https://store.ctr-electronics.com/announcing-kraken-x60/
-    return DCMotor(12_V, 9.37_Nm, 483_A, 2_A, 5800_rpm, numMotors);
-  }
+  static const DCMotor kMinion;
 
   /**
-   * Return a gearbox of Kraken X44 brushless motors.
+   * A Neo Vortex brushless motor.
+   *
+   * @see https://www.revrobotics.com/next-generation-spark-neo/
    */
-  static constexpr DCMotor KrakenX44(int numMotors = 1) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return DCMotor(12_V, 4.11_Nm, 279_A, 2_A, 7758_rpm, numMotors);
-  }
-
-  /**
-   * Return a gearbox of Kraken X44 brushless motors with FOC (Field-Oriented
-   * Control) enabled.
-   */
-  static constexpr DCMotor KrakenX44FOC(int numMotors = 1) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return DCMotor(12_V, 5.01_Nm, 329_A, 2_A, 7368_rpm, numMotors);
-  }
-
-  /**
-   * Return a gearbox of Minion brushless motors.
-   */
-  static constexpr DCMotor Minion(int numMotors = 1) {
-    // From https://motors.ctr-electronics.com/dyno/dynometer-testing/
-    return DCMotor(12_V, 3.17_Nm, 211_A, 2_A, 7704_rpm, numMotors);
-  }
-
-  /**
-   * Return a gearbox of Neo Vortex brushless motors.
-   */
-  static constexpr DCMotor NeoVortex(int numMotors = 1) {
-    // From https://www.revrobotics.com/next-generation-spark-neo/
-    return DCMotor(12_V, 3.60_Nm, 211_A, 3.615_A, 6784_rpm, numMotors);
-  }
+  static const DCMotor kNeoVortex;
 };
+
+inline constexpr DCMotor DCMotor::kCIM{12_V, 2.42_Nm, 133_A, 2.7_A, 5310_rpm};
+
+inline constexpr DCMotor DCMotor::kMiniCIM{12_V, 1.41_Nm, 89_A, 3_A, 5840_rpm};
+
+inline constexpr DCMotor DCMotor::kBag{12_V, 0.43_Nm, 53_A, 1.8_A, 13180_rpm};
+
+inline constexpr DCMotor DCMotor::kVex775Pro{12_V, 0.71_Nm, 134_A, 0.7_A,
+                                             18730_rpm};
+
+inline constexpr DCMotor DCMotor::kRS775_125{12_V, 0.28_Nm, 18_A, 1.6_A,
+                                             5800_rpm};
+
+inline constexpr DCMotor DCMotor::kBanebotsRS775{12_V, 0.72_Nm, 97_A, 2.7_A,
+                                                 13050_rpm};
+
+inline constexpr DCMotor DCMotor::kAndymark9015{12_V, 0.36_Nm, 71_A, 3.7_A,
+                                                14270_rpm};
+
+inline constexpr DCMotor DCMotor::kBanebotsRS550{12_V, 0.38_Nm, 84_A, 0.4_A,
+                                                 19000_rpm};
+
+inline constexpr DCMotor DCMotor::kNEO{12_V, 2.6_Nm, 105_A, 1.8_A, 5676_rpm};
+
+inline constexpr DCMotor DCMotor::kNEO550{12_V, 0.97_Nm, 100_A, 1.4_A,
+                                          11000_rpm};
+
+inline constexpr DCMotor DCMotor::kFalcon500{12_V, 4.69_Nm, 257_A, 1.5_A,
+                                             6380_rpm};
+
+inline constexpr DCMotor DCMotor::kFalcon500FOC{12_V, 5.84_Nm, 304_A, 1.5_A,
+                                                6080_rpm};
+
+inline constexpr DCMotor DCMotor::kRomiBuiltIn{4.5_V, 0.1765_Nm, 1.25_A, 0.13_A,
+                                               150_rpm};
+
+inline constexpr DCMotor DCMotor::kKrakenX60{12_V, 7.09_Nm, 366_A, 2_A,
+                                             6000_rpm};
+
+inline constexpr DCMotor DCMotor::kKrakenX60FOC{12_V, 9.37_Nm, 483_A, 2_A,
+                                                5800_rpm};
+
+inline constexpr DCMotor DCMotor::kKrakenX44{12_V, 4.11_Nm, 279_A, 2_A,
+                                             7758_rpm};
+
+inline constexpr DCMotor DCMotor::kKrakenX44FOC{12_V, 5.01_Nm, 329_A, 2_A,
+                                                7368_rpm};
+
+inline constexpr DCMotor DCMotor::kMinion{12_V, 3.17_Nm, 211_A, 2_A, 7704_rpm};
+
+inline constexpr DCMotor DCMotor::kNeoVortex{12_V, 3.60_Nm, 211_A, 3.615_A,
+                                             6784_rpm};
 
 }  // namespace wpi::math
 
