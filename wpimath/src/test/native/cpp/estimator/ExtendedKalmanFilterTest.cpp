@@ -14,7 +14,7 @@
 #include "wpi/math/geometry/Pose2d.hpp"
 #include "wpi/math/linalg/EigenCore.hpp"
 #include "wpi/math/random/Normal.hpp"
-#include "wpi/math/system/DCMotor.hpp"
+#include "wpi/math/system/Gearbox.hpp"
 #include "wpi/math/system/NumericalJacobian.hpp"
 #include "wpi/math/trajectory/DrivetrainSplineTrajectoryGenerator.hpp"
 #include "wpi/math/util/StateSpaceUtil.hpp"
@@ -32,7 +32,7 @@ namespace {
 
 wpi::math::Vectord<5> Dynamics(const wpi::math::Vectord<5>& x,
                                const wpi::math::Vectord<2>& u) {
-  auto motors = wpi::math::DCMotor::CIM(2);
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kCIM, 2};
 
   // constexpr double Glow = 15.32;       // Low gear ratio
   constexpr double Ghigh = 7.08;       // High gear ratio
@@ -41,9 +41,11 @@ wpi::math::Vectord<5> Dynamics(const wpi::math::Vectord<5>& x,
   constexpr auto m = 63.503_kg;        // Robot mass
   constexpr auto J = 5.6_kg_sq_m;      // Robot moment of inertia
 
-  auto C1 = -std::pow(Ghigh, 2) * motors.Kt /
-            (motors.Kv * motors.R * wpi::units::math::pow<2>(r));
-  auto C2 = Ghigh * motors.Kt / (motors.R * r);
+  const auto& motor = gearbox.motor;
+  auto Kt = gearbox.numMotors * motor.Kt;
+  auto C1 = -std::pow(Ghigh, 2) * Kt /
+            (motor.Kv * motor.R * wpi::units::math::pow<2>(r));
+  auto C2 = Ghigh * Kt / (motor.R * r);
   auto k1 = (1 / m + wpi::units::math::pow<2>(rb) / J);
   auto k2 = (1 / m - wpi::units::math::pow<2>(rb) / J);
 

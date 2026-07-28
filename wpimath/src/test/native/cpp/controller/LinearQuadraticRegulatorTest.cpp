@@ -18,8 +18,6 @@ namespace wpi::math {
 
 TEST(LinearQuadraticRegulatorTest, ElevatorGains) {
   LinearSystem<2, 1, 1> plant = [] {
-    auto motors = DCMotor::Vex775Pro(2);
-
     // Carriage mass
     constexpr auto m = 5_kg;
 
@@ -29,7 +27,9 @@ TEST(LinearQuadraticRegulatorTest, ElevatorGains) {
     // Gear ratio
     constexpr double G = 40.0 / 40.0;
 
-    return wpi::math::Models::ElevatorFromPhysicalConstants(motors, m, r, G)
+    Gearbox gearbox{DCMotor::kVex775Pro, 2, G};
+
+    return wpi::math::Models::ElevatorFromPhysicalConstants(gearbox, m, r)
         .Slice(0);
   }();
   Matrixd<1, 2> K =
@@ -41,8 +41,6 @@ TEST(LinearQuadraticRegulatorTest, ElevatorGains) {
 
 TEST(LinearQuadraticRegulatorTest, ArmGains) {
   LinearSystem<2, 1, 1> plant = [] {
-    auto motors = DCMotor::Vex775Pro(2);
-
     // Carriage mass
     constexpr auto m = 4_kg;
 
@@ -52,8 +50,10 @@ TEST(LinearQuadraticRegulatorTest, ArmGains) {
     // Gear ratio
     constexpr double G = 100.0;
 
+    Gearbox gearbox{DCMotor::kVex775Pro, 2, G};
+
     return wpi::math::Models::SingleJointedArmFromPhysicalConstants(
-               motors, 1.0 / 3.0 * m * r * r, G)
+               gearbox, 1.0 / 3.0 * m * r * r)
         .Slice(0);
   }();
 
@@ -67,8 +67,6 @@ TEST(LinearQuadraticRegulatorTest, ArmGains) {
 
 TEST(LinearQuadraticRegulatorTest, FourMotorElevator) {
   LinearSystem<2, 1, 1> plant = [] {
-    auto motors = DCMotor::Vex775Pro(4);
-
     // Carriage mass
     constexpr auto m = 8_kg;
 
@@ -78,7 +76,9 @@ TEST(LinearQuadraticRegulatorTest, FourMotorElevator) {
     // Gear ratio
     constexpr double G = 14.67;
 
-    return wpi::math::Models::ElevatorFromPhysicalConstants(motors, m, r, G)
+    Gearbox gearbox{DCMotor::kVex775Pro, 4, G};
+
+    return wpi::math::Models::ElevatorFromPhysicalConstants(gearbox, m, r)
         .Slice(0);
   }();
   Matrixd<1, 2> K =
@@ -170,8 +170,6 @@ TEST(LinearQuadraticRegulatorTest, MatrixOverloadsWithDoubleIntegrator) {
 
 TEST(LinearQuadraticRegulatorTest, LatencyCompensate) {
   LinearSystem<2, 1, 1> plant = [] {
-    auto motors = DCMotor::Vex775Pro(4);
-
     // Carriage mass
     constexpr auto m = 8_kg;
 
@@ -181,7 +179,9 @@ TEST(LinearQuadraticRegulatorTest, LatencyCompensate) {
     // Gear ratio
     constexpr double G = 14.67;
 
-    return wpi::math::Models::ElevatorFromPhysicalConstants(motors, m, r, G)
+    Gearbox gearbox{DCMotor::kVex775Pro, 4, G};
+
+    return wpi::math::Models::ElevatorFromPhysicalConstants(gearbox, m, r)
         .Slice(0);
   }();
   LinearQuadraticRegulator<2, 1> controller{plant, {0.1, 0.2}, {12.0}, 20_ms};

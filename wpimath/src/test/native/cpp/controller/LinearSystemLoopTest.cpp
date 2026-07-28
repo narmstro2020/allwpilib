@@ -36,7 +36,8 @@ std::normal_distribution<double> distribution{0.0, 1.0};
 TEST(LinearSystemLoopTest, StateSpaceEnabled) {
   wpi::math::LinearSystem<2, 1, 2> plant{
       wpi::math::Models::ElevatorFromPhysicalConstants(
-          wpi::math::DCMotor::Vex775Pro(2), 5_kg, 0.0181864_m, 1.0)};
+          wpi::math::Gearbox{wpi::math::DCMotor::kVex775Pro, 2, 1.0}, 5_kg,
+          0.0181864_m)};
 
   wpi::math::LinearSystem<2, 1, 1> slicedPlant{plant.Slice(0)};
 
@@ -86,7 +87,8 @@ TEST(LinearSystemLoopTest, StateSpaceEnabled) {
 TEST(LinearSystemLoopTest, FlywheelEnabled) {
   wpi::math::LinearSystem<1, 1, 1> plant{
       wpi::math::Models::FlywheelFromPhysicalConstants(
-          wpi::math::DCMotor::NEO(2), 0.00289_kg_sq_m, 1.0)};
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, 1.0},
+          0.00289_kg_sq_m)};
 
   wpi::math::KalmanFilter<1, 1, 1> observer{
       plant, {1.0}, {kPositionStddev}, kDt};

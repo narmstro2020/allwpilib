@@ -20,7 +20,7 @@
 
 TEST(ModelsTest, FlywheelFromPhysicalConstants) {
   constexpr auto model = wpi::math::Models::FlywheelFromPhysicalConstants(
-      wpi::math::DCMotor::NEO(2), 0.00032_kg_sq_m, 1.0);
+      wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, 1.0}, 0.00032_kg_sq_m);
 
   ASSERT_TRUE(model.A().isApprox(wpi::math::Matrixd<1, 1>{-26.87032}, 0.001));
   ASSERT_TRUE(model.B().isApprox(wpi::math::Matrixd<1, 1>{1354.166667}, 0.001));
@@ -42,7 +42,8 @@ TEST(ModelsTest, FlywheelFromSysId) {
 TEST(ModelsTest, DifferentialDriveFromPhysicalConstants) {
   constexpr auto model =
       wpi::math::Models::DifferentialDriveFromPhysicalConstants(
-          wpi::math::DCMotor::NEO(4), 70_kg, 0.05_m, 0.4_m, 6.0_kg_sq_m, 6.0);
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 4, 6.0}, 70_kg, 0.05_m,
+          0.4_m, 6.0_kg_sq_m);
 
   ASSERT_TRUE(model.A().isApprox(
       wpi::math::Matrixd<2, 2>{{-10.14132, 3.06598}, {3.06598, -10.14132}},
@@ -56,9 +57,10 @@ TEST(ModelsTest, DifferentialDriveFromPhysicalConstants) {
 }
 
 TEST(ModelsTest, ElevatorFromPhysicalConstants) {
-  auto model = wpi::math::Models::ElevatorFromPhysicalConstants(
-                   wpi::math::DCMotor::NEO(2), 5_kg, 0.05_m, 12)
-                   .Slice(0);
+  auto model =
+      wpi::math::Models::ElevatorFromPhysicalConstants(
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, 12}, 5_kg, 0.05_m)
+          .Slice(0);
   ASSERT_TRUE(model.A().isApprox(
       wpi::math::Matrixd<2, 2>{{0.0, 1.0}, {0.0, -99.05473}}, 0.001));
   ASSERT_TRUE(model.B().isApprox(wpi::math::Matrixd<2, 1>{0.0, 20.8}, 0.001));
