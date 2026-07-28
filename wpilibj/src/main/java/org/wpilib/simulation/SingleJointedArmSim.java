@@ -8,7 +8,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
-import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.system.NumericalIntegration;
@@ -17,10 +17,7 @@ import org.wpilib.system.RobotController;
 /** Represents a simulated single jointed arm mechanism. */
 public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
   // The gearbox for the arm.
-  private final DCMotor m_gearbox;
-
-  // The gearing between the motors and the output.
-  private final double m_gearing;
+  private final Gearbox m_gearbox;
 
   // The length of the arm.
   private final double m_armLength;
@@ -38,10 +35,8 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
    * Creates a simulated arm mechanism.
    *
    * @param plant The linear system that represents the arm. This system can be created with {@link
-   *     org.wpilib.math.system.Models#singleJointedArmFromPhysicalConstants(DCMotor, double,
-   *     double)}.
-   * @param gearbox The type of and number of motors in the arm gearbox.
-   * @param gearing The gearing of the arm (numbers greater than 1 represent reductions).
+   *     org.wpilib.math.system.Models#singleJointedArmFromPhysicalConstants(Gearbox, double)}.
+   * @param gearbox The gearbox driving the arm.
    * @param armLength The length of the arm in meters.
    * @param minAngleRads The minimum angle that the arm is capable of, with 0 radians being
    *     horizontal.
@@ -56,8 +51,7 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
   @SuppressWarnings("this-escape")
   public SingleJointedArmSim(
       LinearSystem<N2, N1, N2> plant,
-      DCMotor gearbox,
-      double gearing,
+      Gearbox gearbox,
       double armLength,
       double minAngleRads,
       double maxAngleRads,
@@ -66,7 +60,6 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
       double... measurementStdDevs) {
     super(plant, measurementStdDevs);
     m_gearbox = gearbox;
-    m_gearing = gearing;
     m_armLength = armLength;
     m_minAngle = minAngleRads;
     m_maxAngle = maxAngleRads;
@@ -78,8 +71,7 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
   /**
    * Creates a simulated arm mechanism.
    *
-   * @param gearbox The type of and number of motors in the arm gearbox.
-   * @param gearing The gearing of the arm (numbers greater than 1 represent reductions).
+   * @param gearbox The gearbox driving the arm.
    * @param j The moment of inertia of the arm in kg-m²; can be calculated from CAD software.
    * @param armLength The length of the arm in meters.
    * @param minAngleRads The minimum angle that the arm is capable of, with 0 radians being
@@ -93,8 +85,7 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
    *     noise is desired. If present must have 1 element for position.
    */
   public SingleJointedArmSim(
-      DCMotor gearbox,
-      double gearing,
+      Gearbox gearbox,
       double j,
       double armLength,
       double minAngleRads,
@@ -103,9 +94,8 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
       double startingAngleRads,
       double... measurementStdDevs) {
     this(
-        Models.singleJointedArmFromPhysicalConstants(gearbox, j, gearing),
+        Models.singleJointedArmFromPhysicalConstants(gearbox, j),
         gearbox,
-        gearing,
         armLength,
         minAngleRads,
         maxAngleRads,
@@ -187,10 +177,9 @@ public class SingleJointedArmSim extends LinearSystemSim<N2, N1, N2> {
    * @return The arm current draw in amps.
    */
   public double getCurrentDraw() {
-    // Reductions are greater than 1, so a reduction of 10:1 would mean the motor is
-    // spinning 10x faster than the output
-    var motorVelocity = m_x.get(1, 0) * m_gearing;
-    return m_gearbox.getCurrent(motorVelocity, m_u.get(0, 0)) * Math.signum(m_u.get(0, 0));
+    // Gearbox.getCurrent() takes the velocity of the output, and applies the
+    // reduction internally to get the motor velocity.
+    return m_gearbox.getCurrent(m_x.get(1, 0), m_u.get(0, 0)) * Math.signum(m_u.get(0, 0));
   }
 
   /**

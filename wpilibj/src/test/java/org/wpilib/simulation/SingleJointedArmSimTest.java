@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.util.Units;
 
 class SingleJointedArmSimTest {
@@ -16,8 +17,7 @@ class SingleJointedArmSimTest {
   void testArmDisabled() {
     SingleJointedArmSim sim =
         new SingleJointedArmSim(
-            DCMotor.getVex775Pro(2),
-            300,
+            new Gearbox(DCMotor.kVex775Pro, 2, 300),
             3.0,
             Units.inchesToMeters(30.0),
             -Math.PI,
@@ -42,8 +42,7 @@ class SingleJointedArmSimTest {
     double startingAngleRads = Math.PI / 4.0;
     SingleJointedArmSim sim =
         new SingleJointedArmSim(
-            DCMotor.getKrakenX60(2),
-            125,
+            new Gearbox(DCMotor.kKrakenX60, 2, 125),
             3.0,
             Units.inchesToMeters(30.0),
             0,
