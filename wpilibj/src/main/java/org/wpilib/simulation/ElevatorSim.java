@@ -8,7 +8,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
-import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.system.NumericalIntegration;
@@ -17,7 +17,7 @@ import org.wpilib.system.RobotController;
 /** Represents a simulated elevator mechanism. */
 public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
   // Gearbox for the elevator.
-  private final DCMotor m_gearbox;
+  private final Gearbox m_gearbox;
 
   // The min allowable height for the elevator.
   private final double m_minHeight;
@@ -32,9 +32,9 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
    * Creates a simulated elevator mechanism.
    *
    * @param plant The linear system that represents the elevator. This system can be created with
-   *     {@link org.wpilib.math.system.Models#elevatorFromPhysicalConstants(DCMotor, double, double,
+   *     {@link org.wpilib.math.system.Models#elevatorFromPhysicalConstants(Gearbox, double,
    *     double)}.
-   * @param gearbox The type of and number of motors in the elevator gearbox.
+   * @param gearbox The gearbox driving the elevator.
    * @param minHeight The min allowable height of the elevator in meters.
    * @param maxHeight The max allowable height of the elevator in meters.
    * @param simulateGravity Whether gravity should be simulated or not.
@@ -45,7 +45,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
   @SuppressWarnings("this-escape")
   public ElevatorSim(
       LinearSystem<N2, N1, N2> plant,
-      DCMotor gearbox,
+      Gearbox gearbox,
       double minHeight,
       double maxHeight,
       boolean simulateGravity,
@@ -65,7 +65,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
    *
    * @param kV The velocity gain.
    * @param kA The acceleration gain.
-   * @param gearbox The type of and number of motors in the elevator gearbox.
+   * @param gearbox The gearbox driving the elevator.
    * @param minHeight The min allowable height of the elevator in meters.
    * @param maxHeight The max allowable height of the elevator in meters.
    * @param simulateGravity Whether gravity should be simulated or not.
@@ -76,7 +76,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
   public ElevatorSim(
       double kV,
       double kA,
-      DCMotor gearbox,
+      Gearbox gearbox,
       double minHeight,
       double maxHeight,
       boolean simulateGravity,
@@ -95,8 +95,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
   /**
    * Creates a simulated elevator mechanism.
    *
-   * @param gearbox The type of and number of motors in the elevator gearbox.
-   * @param gearing The gearing of the elevator (numbers greater than 1 represent reductions).
+   * @param gearbox The gearbox driving the elevator.
    * @param carriageMass The mass of the elevator carriage in kg.
    * @param drumRadius The radius of the drum that the elevator spool is wrapped around in meters.
    * @param minHeight The min allowable height of the elevator in meters.
@@ -107,8 +106,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
    *     noise is desired. If present must have 1 element for position.
    */
   public ElevatorSim(
-      DCMotor gearbox,
-      double gearing,
+      Gearbox gearbox,
       double carriageMass,
       double drumRadius,
       double minHeight,
@@ -117,7 +115,7 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
       double startingHeight,
       double... measurementStdDevs) {
     this(
-        Models.elevatorFromPhysicalConstants(gearbox, carriageMass, drumRadius, gearing),
+        Models.elevatorFromPhysicalConstants(gearbox, carriageMass, drumRadius),
         gearbox,
         minHeight,
         maxHeight,
@@ -205,9 +203,10 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
     // v = r w, so w = v/r
     double kA = 1 / m_plant.getB().get(1, 0);
     double kV = -m_plant.getA().get(1, 1) * kA;
-    double motorVelocity = m_x.get(1, 0) * kV * m_gearbox.Kv;
+    double motorVelocity = m_x.get(1, 0) * kV * m_gearbox.motor.Kv;
     var appliedVoltage = m_u.get(0, 0);
-    return m_gearbox.getCurrent(motorVelocity, appliedVoltage) * Math.signum(appliedVoltage);
+    return m_gearbox.getCurrent(motorVelocity, appliedVoltage)
+        * Math.signum(appliedVoltage);
   }
 
   /**

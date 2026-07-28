@@ -13,6 +13,7 @@ import org.wpilib.hardware.rotation.Encoder;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.util.Units;
 import org.wpilib.system.RobotController;
@@ -27,8 +28,7 @@ class ElevatorSimTest {
 
     var sim =
         new ElevatorSim(
-            DCMotor.getVex775Pro(4),
-            14.67,
+            new Gearbox(DCMotor.kVex775Pro, 4, 14.67),
             8,
             0.75 * 25.4 / 1000.0,
             0.0,
@@ -68,7 +68,15 @@ class ElevatorSimTest {
     double startingHeightMeters = 0.5;
     var sim =
         new ElevatorSim(
-            DCMotor.getKrakenX60(2), 20, 8.0, 0.1, 0.0, 1.0, true, startingHeightMeters, 0.01, 0.0);
+            new Gearbox(DCMotor.kKrakenX60, 2, 20),
+            8.0,
+            0.1,
+            0.0,
+            1.0,
+            true,
+            startingHeightMeters,
+            0.01,
+            0.0);
 
     assertEquals(startingHeightMeters, sim.getPosition());
     assertEquals(0, sim.getVelocity());
@@ -78,7 +86,13 @@ class ElevatorSimTest {
   void testMinMax() {
     var sim =
         new ElevatorSim(
-            DCMotor.getVex775Pro(4), 14.67, 8.0, 0.75 * 25.4 / 1000.0, 0.0, 1.0, true, 0.0);
+            new Gearbox(DCMotor.kVex775Pro, 4, 14.67),
+            8.0,
+            0.75 * 25.4 / 1000.0,
+            0.0,
+            1.0,
+            true,
+            0.0);
 
     for (int i = 0; i < 100; i++) {
       sim.setInput(VecBuilder.fill(0));
@@ -99,7 +113,13 @@ class ElevatorSimTest {
   void testStability() {
     var sim =
         new ElevatorSim(
-            DCMotor.getVex775Pro(4), 100, 4, Units.inchesToMeters(0.5), 0, 10, false, 0.0);
+            new Gearbox(DCMotor.kVex775Pro, 4, 100),
+            4,
+            Units.inchesToMeters(0.5),
+            0,
+            10,
+            false,
+            0.0);
 
     sim.setState(VecBuilder.fill(0, 0));
     sim.setInput(12);
@@ -109,7 +129,7 @@ class ElevatorSimTest {
 
     var system =
         Models.elevatorFromPhysicalConstants(
-            DCMotor.getVex775Pro(4), 4, Units.inchesToMeters(0.5), 100);
+            new Gearbox(DCMotor.kVex775Pro, 4, 100), 4, Units.inchesToMeters(0.5));
     assertEquals(
         system.calculateX(VecBuilder.fill(0, 0), VecBuilder.fill(12), 0.02 * 50.0).get(0, 0),
         sim.getPosition(),
@@ -118,11 +138,14 @@ class ElevatorSimTest {
 
   @Test
   void testCurrentDraw() {
-    var motor = DCMotor.getKrakenX60(2);
-    var sim = new ElevatorSim(motor, 20, 8.0, 0.1, 0.0, 1.0, true, 0.0, 0.01, 0.0);
+    var gearbox = new Gearbox(DCMotor.kKrakenX60, 2, 20);
+    var sim = new ElevatorSim(gearbox, 8.0, 0.1, 0.0, 1.0, true, 0.0, 0.01, 0.0);
 
     assertEquals(0.0, sim.getCurrentDraw());
-    sim.setInputVoltage(motor.getVoltage(motor.getTorque(60.0), 0.0));
+    // Drive the gearbox with the voltage its motors need to produce 60 A of
+    // total draw at zero speed.
+    var motor = gearbox.motor;
+    sim.setInputVoltage(motor.getVoltage(motor.getTorque(60.0 / gearbox.numMotors), 0.0));
     sim.update(0.100);
     // Current draw should start at 60 A and decrease as the back-EMF catches up
     assertTrue(0.0 < sim.getCurrentDraw() && sim.getCurrentDraw() < 60.0);
