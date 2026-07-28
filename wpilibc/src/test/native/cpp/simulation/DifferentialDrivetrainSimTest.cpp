@@ -24,14 +24,17 @@ TEST(DifferentialDrivetrainSimTest, Convergence) {
 
   wpi::sim::RoboRioSim::ResetData();
 
-  auto motor = wpi::math::DCMotor::NEO(2);
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kNEO, 2, 1.0};
   auto plant = wpi::math::Models::DifferentialDriveFromPhysicalConstants(
-      motor, 50_kg, 2_in, 12_in, 0.5_kg_sq_m, 1.0);
+      gearbox, 50_kg, 2_in, 12_in, 0.5_kg_sq_m);
 
   wpi::math::DifferentialDriveKinematics kinematics{24_in};
   wpi::sim::DifferentialDrivetrainSim sim{
-      plant, 24_in, motor,
-      1.0,   2_in,  {0.001, 0.001, 0.0001, 0.1, 0.1, 0.005, 0.005}};
+      plant,
+      24_in,
+      gearbox,
+      2_in,
+      {0.001, 0.001, 0.0001, 0.1, 0.1, 0.005, 0.005}};
 
   wpi::math::LinearPlantInversionFeedforward feedforward{plant, 20_ms};
   wpi::math::LTVUnicycleController feedback{20_ms};
@@ -78,12 +81,12 @@ TEST(DifferentialDrivetrainSimTest, Convergence) {
 }
 
 TEST(DifferentialDrivetrainSimTest, Current) {
-  auto motor = wpi::math::DCMotor::NEO(2);
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kNEO, 2, 1.0};
   auto plant = wpi::math::Models::DifferentialDriveFromPhysicalConstants(
-      motor, 50_kg, 2_in, 12_in, 0.5_kg_sq_m, 1.0);
+      gearbox, 50_kg, 2_in, 12_in, 0.5_kg_sq_m);
 
   wpi::math::DifferentialDriveKinematics kinematics{24_in};
-  wpi::sim::DifferentialDrivetrainSim sim{plant, 24_in, motor, 1.0, 2_in};
+  wpi::sim::DifferentialDrivetrainSim sim{plant, 24_in, gearbox, 2_in};
 
   sim.SetInputs(-12_V, 12_V);
   for (int i = 0; i < 10; ++i) {
@@ -105,12 +108,12 @@ TEST(DifferentialDrivetrainSimTest, Current) {
 }
 
 TEST(DifferentialDrivetrainSimTest, ModelStability) {
-  auto motor = wpi::math::DCMotor::NEO(2);
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kNEO, 2, 5.0};
   auto plant = wpi::math::Models::DifferentialDriveFromPhysicalConstants(
-      motor, 50_kg, 2_in, 12_in, 2_kg_sq_m, 5.0);
+      gearbox, 50_kg, 2_in, 12_in, 2_kg_sq_m);
 
   wpi::math::DifferentialDriveKinematics kinematics{24_in};
-  wpi::sim::DifferentialDrivetrainSim sim{plant, 24_in, motor, 1.0, 2_in};
+  wpi::sim::DifferentialDrivetrainSim sim{plant, 24_in, gearbox, 2_in};
 
   sim.SetInputs(2_V, 4_V);
 

@@ -26,8 +26,6 @@ constexpr auto kDt = 0.00505_s;
 class StateSpaceTest : public testing::Test {
  public:
   LinearSystem<2, 1, 1> plant = [] {
-    auto motors = DCMotor::Vex775Pro(2);
-
     // Carriage mass
     constexpr auto m = 5_kg;
 
@@ -37,7 +35,9 @@ class StateSpaceTest : public testing::Test {
     // Gear ratio
     constexpr double G = 40.0 / 40.0;
 
-    return wpi::math::Models::ElevatorFromPhysicalConstants(motors, m, r, G)
+    Gearbox gearbox{DCMotor::kVex775Pro, 2, G};
+
+    return wpi::math::Models::ElevatorFromPhysicalConstants(gearbox, m, r)
         .Slice(0);
   }();
   LinearQuadraticRegulator<2, 1> controller{plant, {0.02, 0.4}, {12.0}, kDt};
