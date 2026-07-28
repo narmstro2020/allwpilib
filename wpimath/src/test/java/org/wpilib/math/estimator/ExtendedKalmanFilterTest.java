@@ -19,6 +19,7 @@ import org.wpilib.math.numbers.N3;
 import org.wpilib.math.numbers.N5;
 import org.wpilib.math.random.Normal;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.NumericalIntegration;
 import org.wpilib.math.system.NumericalJacobian;
 import org.wpilib.math.trajectory.DrivetrainSplineTrajectoryGenerator;
@@ -28,7 +29,7 @@ import org.wpilib.math.util.StateSpaceUtil;
 
 class ExtendedKalmanFilterTest {
   private static Matrix<N5, N1> getDynamics(final Matrix<N5, N1> x, final Matrix<N2, N1> u) {
-    final var motors = DCMotor.getCIM(2);
+    final var gearbox = new Gearbox(DCMotor.kCIM, 2);
 
     final var gr = 7.08; // Gear ratio
     final var rb = 0.8382 / 2.0; // Wheelbase radius (trackwidth)
@@ -36,8 +37,10 @@ class ExtendedKalmanFilterTest {
     final var m = 63.503; // Robot mass
     final var J = 5.6; // Robot moment of inertia
 
-    final var C1 = -Math.pow(gr, 2) * motors.Kt / (motors.Kv * motors.R * r * r);
-    final var C2 = gr * motors.Kt / (motors.R * r);
+    final var motor = gearbox.motor;
+    final var Kt = gearbox.numMotors * motor.Kt;
+    final var C1 = -Math.pow(gr, 2) * Kt / (motor.Kv * motor.R * r * r);
+    final var C2 = gr * Kt / (motor.R * r);
     final var k1 = 1.0 / m + rb * rb / J;
     final var k2 = 1.0 / m - rb * rb / J;
 

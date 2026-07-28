@@ -25,6 +25,7 @@ import org.wpilib.math.numbers.N5;
 import org.wpilib.math.random.Normal;
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Discretization;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.system.NumericalIntegration;
 import org.wpilib.math.system.NumericalJacobian;
@@ -35,7 +36,7 @@ import org.wpilib.math.util.StateSpaceUtil;
 
 class S3UKFTest {
   private static Matrix<N5, N1> driveDynamics(Matrix<N5, N1> x, Matrix<N2, N1> u) {
-    var motors = DCMotor.getCIM(2);
+    var gearbox = new Gearbox(DCMotor.kCIM, 2);
 
     // var gLow = 15.32;    // Low gear ratio
     var gHigh = 7.08; // High gear ratio
@@ -44,8 +45,10 @@ class S3UKFTest {
     var m = 63.503; // Robot mass
     var J = 5.6; // Robot moment of inertia
 
-    var C1 = -Math.pow(gHigh, 2) * motors.Kt / (motors.Kv * motors.R * r * r);
-    var C2 = gHigh * motors.Kt / (motors.R * r);
+    var motor = gearbox.motor;
+    var Kt = gearbox.numMotors * motor.Kt;
+    var C1 = -Math.pow(gHigh, 2) * Kt / (motor.Kv * motor.R * r * r);
+    var C2 = gHigh * Kt / (motor.R * r);
     var k1 = 1.0 / m + Math.pow(rb, 2) / J;
     var k2 = 1.0 / m - Math.pow(rb, 2) / J;
 

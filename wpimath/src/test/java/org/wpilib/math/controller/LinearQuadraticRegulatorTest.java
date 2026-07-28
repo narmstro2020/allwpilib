@@ -12,6 +12,7 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Discretization;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.util.Nat;
 import org.wpilib.math.util.Num;
@@ -19,13 +20,12 @@ import org.wpilib.math.util.Num;
 class LinearQuadraticRegulatorTest {
   @Test
   void testLQROnElevator() {
-    var motors = DCMotor.getVex775Pro(2);
-
     var m = 5.0;
     var r = 0.0181864;
     var G = 1.0;
 
-    var plant = Models.elevatorFromPhysicalConstants(motors, m, r, G);
+    var gearbox = new Gearbox(DCMotor.kVex775Pro, 2, G);
+    var plant = Models.elevatorFromPhysicalConstants(gearbox, m, r);
 
     var qElms = VecBuilder.fill(0.02, 0.4);
     var rElms = VecBuilder.fill(12.0);
@@ -43,7 +43,7 @@ class LinearQuadraticRegulatorTest {
 
     var plant =
         Models.elevatorFromPhysicalConstants(
-            DCMotor.getVex775Pro(4), 8.0, 0.75 * 25.4 / 1000.0, 14.67);
+            new Gearbox(DCMotor.kVex775Pro, 4, 14.67), 8.0, 0.75 * 25.4 / 1000.0);
 
     var K =
         new LinearQuadraticRegulator<>(plant, VecBuilder.fill(0.1, 0.2), VecBuilder.fill(12.0), dt)
@@ -55,13 +55,12 @@ class LinearQuadraticRegulatorTest {
 
   @Test
   void testLQROnArm() {
-    var motors = DCMotor.getVex775Pro(2);
-
     var m = 4.0;
     var r = 0.4;
     var G = 100.0;
 
-    var plant = Models.singleJointedArmFromPhysicalConstants(motors, 1d / 3d * m * r * r, G);
+    var gearbox = new Gearbox(DCMotor.kVex775Pro, 2, G);
+    var plant = Models.singleJointedArmFromPhysicalConstants(gearbox, 1d / 3d * m * r * r);
 
     var qElms = VecBuilder.fill(0.01745, 0.08726);
     var rElms = VecBuilder.fill(12.0);
@@ -161,7 +160,7 @@ class LinearQuadraticRegulatorTest {
 
     var plant =
         Models.elevatorFromPhysicalConstants(
-            DCMotor.getVex775Pro(4), 8.0, 0.75 * 25.4 / 1000.0, 14.67);
+            new Gearbox(DCMotor.kVex775Pro, 4, 14.67), 8.0, 0.75 * 25.4 / 1000.0);
 
     var regulator =
         new LinearQuadraticRegulator<>(plant, VecBuilder.fill(0.1, 0.2), VecBuilder.fill(12.0), dt);
