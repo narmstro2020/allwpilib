@@ -994,6 +994,16 @@ def wpimath_extension(srcs = [], header_to_dat_deps = [], extra_hdrs = [], inclu
             ],
         ),
         struct(
+            class_name = "Gearbox",
+            yml_file = "semiwrap/Gearbox.yml",
+            header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
+            header_file = "$(execpath :robotpy-native-wpimath.copy_headers)/wpi/math/system/Gearbox.hpp",
+            tmpl_class_names = [],
+            trampolines = [
+                ("wpi::math::Gearbox", "wpi__math__Gearbox.hpp"),
+            ],
+        ),
+        struct(
             class_name = "LinearSystem",
             yml_file = "semiwrap/LinearSystem.yml",
             header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",

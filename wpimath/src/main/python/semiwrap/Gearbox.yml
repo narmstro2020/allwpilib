@@ -1,0 +1,26 @@
+extra_includes:
+- wpystruct.h
+
+classes:
+  wpi::math::Gearbox:
+    attributes:
+      motor:
+      numMotors:
+      reduction:
+    methods:
+      Gearbox:
+      WithReduction:
+      StallTorque:
+      StallCurrent:
+      FreeCurrent:
+      FreeSpeed:
+      Current:
+        overloads:
+          wpi::units::radians_per_second_t, wpi::units::volt_t [const]:
+          wpi::units::newton_meter_t [const]:
+      Torque:
+      Voltage:
+      Velocity:
+
+inline_code: |
+  SetupWPyStruct<wpi::math::Gearbox>(cls_Gearbox);

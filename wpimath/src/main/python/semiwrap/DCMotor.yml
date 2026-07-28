@@ -12,6 +12,44 @@ classes:
       R:
       Kv:
       Kt:
+      kCIM:
+        rename: cim
+      kMiniCIM:
+        rename: mini_cim
+      kBag:
+        rename: bag
+      kVex775Pro:
+        rename: vex775_pro
+      kRS775_125:
+        rename: rs775_125
+      kBanebotsRS775:
+        rename: banebots_rs775
+      kAndymark9015:
+        rename: andymark9015
+      kBanebotsRS550:
+        rename: banebots_rs550
+      kNEO:
+        rename: neo
+      kNEO550:
+        rename: neo550
+      kFalcon500:
+        rename: falcon500
+      kFalcon500FOC:
+        rename: falcon500_foc
+      kRomiBuiltIn:
+        rename: romi_built_in
+      kKrakenX60:
+        rename: kraken_x60
+      kKrakenX60FOC:
+        rename: kraken_x60_foc
+      kKrakenX44:
+        rename: kraken_x44
+      kKrakenX44FOC:
+        rename: kraken_x44_foc
+      kMinion:
+        rename: minion
+      kNeoVortex:
+        rename: neo_vortex
     methods:
       DCMotor:
       Current:
@@ -21,26 +59,6 @@ classes:
       Torque:
       Voltage:
       Velocity:
-      WithReduction:
-      CIM:
-      MiniCIM:
-      Bag:
-      Vex775Pro:
-      RS775_125:
-      BanebotsRS775:
-      Andymark9015:
-      BanebotsRS550:
-      NEO:
-      NEO550:
-      Falcon500:
-      Falcon500FOC:
-      RomiBuiltIn:
-      KrakenX60:
-      KrakenX60FOC:
-      NeoVortex:
-      KrakenX44:
-      KrakenX44FOC:
-      Minion:
 
 inline_code: |
   SetupWPyStruct<wpi::math::DCMotor>(cls_DCMotor);

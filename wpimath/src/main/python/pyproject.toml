@@ -1569,6 +1569,7 @@ SplineParameterizer = "wpi/math/spline/SplineParameterizer.hpp"
 # wpi/math/system
 DCMotor = "wpi/math/system/DCMotor.hpp"
 # Discretization = "wpi/math/system/Discretization.hpp"
+Gearbox = "wpi/math/system/Gearbox.hpp"
 LinearSystem = "wpi/math/system/LinearSystem.hpp"
 LinearSystemLoop = "wpi/math/system/LinearSystemLoop.hpp"
 # LinearSystemUtil = "wpi/math/system/LinearSystemUtil.hpp"
