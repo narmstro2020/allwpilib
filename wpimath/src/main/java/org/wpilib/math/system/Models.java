@@ -21,25 +21,22 @@ public final class Models {
    * <p>The states are [angular velocity], the inputs are [voltage], and the outputs are [angular
    * velocity].
    *
-   * @param motor The motor (or gearbox) attached to the flywheel.
+   * @param gearbox The gearbox attached to the flywheel.
    * @param J The moment of inertia J of the flywheel.
-   * @param gearing Gear ratio from motor to flywheel (greater than 1 is a reduction).
    * @return Flywheel state-space model.
-   * @throws IllegalArgumentException if J &lt;= 0 or gearing &lt;= 0.
+   * @throws IllegalArgumentException if J &lt;= 0.
    */
-  public static LinearSystem<N1, N1, N1> flywheelFromPhysicalConstants(
-      DCMotor motor, double J, double gearing) {
+  public static LinearSystem<N1, N1, N1> flywheelFromPhysicalConstants(Gearbox gearbox, double J) {
     if (J <= 0.0) {
       throw new IllegalArgumentException("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw new IllegalArgumentException("gearing must be greater than zero.");
-    }
 
-    var A =
-        MatBuilder.fill(
-            Nat.N1(), Nat.N1(), -Math.pow(gearing, 2) * motor.Kt / (motor.Kv * motor.R * J));
-    var B = MatBuilder.fill(Nat.N1(), Nat.N1(), gearing * motor.Kt / (motor.R * J));
+    var motor = gearbox.motor;
+    double G = gearbox.reduction;
+    double Kt = gearbox.numMotors * motor.Kt;
+
+    var A = MatBuilder.fill(Nat.N1(), Nat.N1(), -Math.pow(G, 2) * Kt / (motor.Kv * motor.R * J));
+    var B = MatBuilder.fill(Nat.N1(), Nat.N1(), G * Kt / (motor.R * J));
     var C = MatBuilder.fill(Nat.N1(), Nat.N1(), 1.0);
     var D = MatBuilder.fill(Nat.N1(), Nat.N1(), 0.0);
 
@@ -81,24 +78,24 @@ public final class Models {
    * <p>The states are [position, velocity], the inputs are [voltage], and the outputs are
    * [position, velocity].
    *
-   * @param motor The motor (or gearbox) attached to the carriage.
+   * @param gearbox The gearbox attached to the carriage.
    * @param mass The mass of the elevator carriage, in kilograms.
    * @param radius The radius of the elevator's driving drum, in meters.
-   * @param gearing Gear ratio from motor to carriage (greater than 1 is a reduction).
    * @return Elevator state-space model.
-   * @throws IllegalArgumentException if mass &lt;= 0, radius &lt;= 0, or gearing &lt;= 0.
+   * @throws IllegalArgumentException if mass &lt;= 0 or radius &lt;= 0.
    */
   public static LinearSystem<N2, N1, N2> elevatorFromPhysicalConstants(
-      DCMotor motor, double mass, double radius, double gearing) {
+      Gearbox gearbox, double mass, double radius) {
     if (mass <= 0.0) {
       throw new IllegalArgumentException("mass must be greater than zero.");
     }
     if (radius <= 0.0) {
       throw new IllegalArgumentException("radius must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw new IllegalArgumentException("gearing must be greater than zero.");
-    }
+
+    var motor = gearbox.motor;
+    double G = gearbox.reduction;
+    double Kt = gearbox.numMotors * motor.Kt;
 
     var A =
         MatBuilder.fill(
@@ -107,9 +104,8 @@ public final class Models {
             0.0,
             1.0,
             0.0,
-            -Math.pow(gearing, 2) * motor.Kt / (motor.R * Math.pow(radius, 2) * mass * motor.Kv));
-    var B =
-        MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, gearing * motor.Kt / (motor.R * radius * mass));
+            -Math.pow(G, 2) * Kt / (motor.R * Math.pow(radius, 2) * mass * motor.Kv));
+    var B = MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, G * Kt / (motor.R * radius * mass));
     var C = MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0);
     var D = MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, 0.0);
 
@@ -152,30 +148,25 @@ public final class Models {
    * <p>The states are [angle, angular velocity], the inputs are [voltage], and the outputs are
    * [angle, angular velocity].
    *
-   * @param motor The motor (or gearbox) attached to the arm.
+   * @param gearbox The gearbox attached to the arm.
    * @param J The moment of inertia J of the arm.
-   * @param gearing Gear ratio from motor to arm (greater than 1 is a reduction).
    * @return Single-jointed arm state-space model.
-   * @throws IllegalArgumentException if J &lt;= 0 or gearing &lt;= 0.
+   * @throws IllegalArgumentException if J &lt;= 0.
    */
   public static LinearSystem<N2, N1, N2> singleJointedArmFromPhysicalConstants(
-      DCMotor motor, double J, double gearing) {
+      Gearbox gearbox, double J) {
     if (J <= 0.0) {
       throw new IllegalArgumentException("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw new IllegalArgumentException("gearing must be greater than zero.");
-    }
+
+    var motor = gearbox.motor;
+    double G = gearbox.reduction;
+    double Kt = gearbox.numMotors * motor.Kt;
 
     var A =
         MatBuilder.fill(
-            Nat.N2(),
-            Nat.N2(),
-            0.0,
-            1.0,
-            0.0,
-            -Math.pow(gearing, 2) * motor.Kt / (motor.Kv * motor.R * J));
-    var B = MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, gearing * motor.Kt / (motor.R * J));
+            Nat.N2(), Nat.N2(), 0.0, 1.0, 0.0, -Math.pow(G, 2) * Kt / (motor.Kv * motor.R * J));
+    var B = MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, G * Kt / (motor.R * J));
     var C = MatBuilder.fill(Nat.N2(), Nat.N2(), 1.0, 0.0, 0.0, 1.0);
     var D = MatBuilder.fill(Nat.N2(), Nat.N1(), 0.0, 0.0);
 
@@ -218,18 +209,16 @@ public final class Models {
    * <p>The states are [left velocity, right velocity], the inputs are [left voltage, right
    * voltage], and the outputs are [left velocity, right velocity].
    *
-   * @param motor The motor (or gearbox) driving the drivetrain.
+   * @param gearbox The gearbox driving one side of the drivetrain.
    * @param mass The mass of the robot in kilograms.
    * @param r The radius of the wheels in meters.
    * @param rb The radius of the base (half of the trackwidth), in meters.
    * @param J The moment of inertia of the robot.
-   * @param gearing Gear ratio from motor to wheel (greater than 1 is a reduction).
    * @return Differential drive state-space model.
-   * @throws IllegalArgumentException if mass &lt;= 0, r &lt;= 0, rb &lt;= 0, J &lt;= 0, or gearing
-   *     &lt;= 0.
+   * @throws IllegalArgumentException if mass &lt;= 0, r &lt;= 0, rb &lt;= 0, or J &lt;= 0.
    */
   public static LinearSystem<N2, N2, N2> differentialDriveFromPhysicalConstants(
-      DCMotor motor, double mass, double r, double rb, double J, double gearing) {
+      Gearbox gearbox, double mass, double r, double rb, double J) {
     if (mass <= 0.0) {
       throw new IllegalArgumentException("mass must be greater than zero.");
     }
@@ -242,12 +231,13 @@ public final class Models {
     if (J <= 0.0) {
       throw new IllegalArgumentException("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw new IllegalArgumentException("gearing must be greater than zero.");
-    }
 
-    double C1 = -Math.pow(gearing, 2) * motor.Kt / (motor.Kv * motor.R * Math.pow(r, 2));
-    double C2 = gearing * motor.Kt / (motor.R * r);
+    var motor = gearbox.motor;
+    double G = gearbox.reduction;
+    double Kt = gearbox.numMotors * motor.Kt;
+
+    double C1 = -Math.pow(G, 2) * Kt / (motor.Kv * motor.R * Math.pow(r, 2));
+    double C2 = G * Kt / (motor.R * r);
 
     var A =
         MatBuilder.fill(
