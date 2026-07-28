@@ -10,6 +10,7 @@ import org.wpilib.hardware.rotation.Encoder;
 import org.wpilib.math.controller.ElevatorFeedforward;
 import org.wpilib.math.controller.ProfiledPIDController;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.trajectory.TrapezoidProfile;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.ElevatorSim;
@@ -23,8 +24,10 @@ import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.RobotController;
 
 public class Elevator implements AutoCloseable {
-  // This gearbox represents a gearbox containing 4 Vex 775pro motors.
-  private final DCMotor elevatorGearbox = DCMotor.getVex775Pro(4);
+  // This gearbox contains 4 Vex 775pro motors driving the elevator through a
+  // reduction.
+  private final Gearbox elevatorGearbox =
+      new Gearbox(DCMotor.kVex775Pro, 4, Constants.kElevatorGearing);
 
   // Standard classes for controlling our elevator
   private final ProfiledPIDController controller =
@@ -47,7 +50,6 @@ public class Elevator implements AutoCloseable {
   private final ElevatorSim elevatorSim =
       new ElevatorSim(
           elevatorGearbox,
-          Constants.kElevatorGearing,
           Constants.kCarriageMass,
           Constants.kElevatorDrumRadius,
           Constants.kMinElevatorHeight,

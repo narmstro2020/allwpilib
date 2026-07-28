@@ -10,6 +10,7 @@ import org.wpilib.hardware.rotation.Encoder;
 import org.wpilib.math.controller.ElevatorFeedforward;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.trajectory.ExponentialProfile;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.BatterySim;
@@ -24,8 +25,9 @@ import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.RobotController;
 
 public class Elevator implements AutoCloseable {
-  // This gearbox represents a gearbox containing 4 Vex 775pro motors.
-  private final DCMotor elevatorGearbox = DCMotor.getNEO(2);
+  // This gearbox contains 2 NEO motors driving the elevator through a
+  // reduction.
+  private final Gearbox elevatorGearbox = new Gearbox(DCMotor.kNEO, 2, Constants.kElevatorGearing);
 
   private final ExponentialProfile profile =
       new ExponentialProfile(
@@ -52,7 +54,6 @@ public class Elevator implements AutoCloseable {
   private final ElevatorSim elevatorSim =
       new ElevatorSim(
           elevatorGearbox,
-          Constants.kElevatorGearing,
           Constants.kCarriageMass,
           Constants.kElevatorDrumRadius,
           Constants.kMinElevatorHeight,

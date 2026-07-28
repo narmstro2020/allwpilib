@@ -13,6 +13,7 @@ import org.wpilib.math.estimator.KalmanFilter;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.LinearSystemLoop;
 import org.wpilib.math.system.Models;
@@ -43,7 +44,7 @@ public class Robot extends TimedRobot {
   // Outputs (what we can measure): [velocity], in radians per second.
   private final LinearSystem<N1, N1, N1> flywheelPlant =
       Models.flywheelFromPhysicalConstants(
-          DCMotor.getNEO(2), kFlywheelMomentOfInertia, kFlywheelGearing);
+          new Gearbox(DCMotor.kNEO, 2, kFlywheelGearing), kFlywheelMomentOfInertia);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
   private final KalmanFilter<N1, N1, N1> observer =

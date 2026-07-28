@@ -14,6 +14,7 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.LinearSystemLoop;
 import org.wpilib.math.system.Models;
@@ -59,7 +60,7 @@ public class Robot extends TimedRobot {
    */
   private final LinearSystem<N2, N1, N2> elevatorPlant =
       Models.elevatorFromPhysicalConstants(
-          DCMotor.getNEO(2), kCarriageMass, kDrumRadius, kElevatorGearing);
+          new Gearbox(DCMotor.kNEO, 2, kElevatorGearing), kCarriageMass, kDrumRadius);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
   @SuppressWarnings("unchecked")

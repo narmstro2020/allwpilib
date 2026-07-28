@@ -22,6 +22,7 @@ import org.wpilib.math.kinematics.DifferentialDriveWheelVelocities;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N2;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.util.ComputerVisionUtil;
@@ -96,7 +97,7 @@ public class Drivetrain {
       Models.differentialDriveFromSysId(1.98, 0.2, 1.5, 0.3);
   private final DifferentialDrivetrainSim drivetrainSimulator =
       new DifferentialDrivetrainSim(
-          drivetrainSystem, DCMotor.getCIM(2), 8, kTrackwidth, kWheelRadius, null);
+          drivetrainSystem, new Gearbox(DCMotor.kCIM, 2, 8), kTrackwidth, kWheelRadius, null);
 
   /**
    * Constructs a differential drive object. Sets the encoder distance per pulse and resets the

@@ -14,6 +14,7 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N2;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.LinearSystemLoop;
 import org.wpilib.math.system.Models;
@@ -53,7 +54,8 @@ public class Robot extends TimedRobot {
   // Inputs (what we can "put in"): [voltage], in volts.
   // Outputs (what we can measure): [position], in radians.
   private final LinearSystem<N2, N1, N2> armPlant =
-      Models.singleJointedArmFromPhysicalConstants(DCMotor.getNEO(2), kArmMOI, kArmGearing);
+      Models.singleJointedArmFromPhysicalConstants(
+          new Gearbox(DCMotor.kNEO, 2, kArmGearing), kArmMOI);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
   @SuppressWarnings("unchecked")

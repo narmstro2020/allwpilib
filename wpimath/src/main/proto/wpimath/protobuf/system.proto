@@ -18,6 +18,12 @@ message ProtobufDCMotor {
   double free_speed = 5;
 }
 
+message ProtobufGearbox {
+  ProtobufDCMotor motor = 1;
+  uint32 num_motors = 2;
+  double reduction = 3;
+}
+
 message ProtobufLinearSystem {
   uint32 num_states = 1;
   uint32 num_inputs = 2;

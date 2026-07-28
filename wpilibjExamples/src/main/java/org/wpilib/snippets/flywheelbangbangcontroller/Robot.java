@@ -12,6 +12,7 @@ import org.wpilib.math.controller.BangBangController;
 import org.wpilib.math.controller.SimpleMotorFeedforward;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.system.LinearSystem;
 import org.wpilib.math.system.Models;
 import org.wpilib.math.util.Units;
@@ -57,10 +58,10 @@ public class Robot extends TimedRobot {
   private static final double kFlywheelMomentOfInertia =
       0.5 * Units.lbsToKilograms(1.5) * Math.pow(Units.inchesToMeters(4), 2);
 
-  private final DCMotor gearbox = DCMotor.getNEO(1);
+  private final Gearbox gearbox = new Gearbox(DCMotor.kNEO, 1, kFlywheelGearing);
 
   private final LinearSystem<N1, N1, N1> plant =
-      Models.flywheelFromPhysicalConstants(gearbox, kFlywheelGearing, kFlywheelMomentOfInertia);
+      Models.flywheelFromPhysicalConstants(gearbox, kFlywheelMomentOfInertia);
 
   private final FlywheelSim flywheelSim = new FlywheelSim(plant, gearbox);
   private final EncoderSim encoderSim = new EncoderSim(encoder);

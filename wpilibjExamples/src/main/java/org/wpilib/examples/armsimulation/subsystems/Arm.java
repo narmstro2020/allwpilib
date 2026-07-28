@@ -9,6 +9,7 @@ import org.wpilib.hardware.motor.PWMSparkMax;
 import org.wpilib.hardware.rotation.Encoder;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Gearbox;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.BatterySim;
 import org.wpilib.simulation.EncoderSim;
@@ -28,8 +29,9 @@ public class Arm implements AutoCloseable {
   private double armKp = Constants.kDefaultArmKp;
   private double armSetpointDegrees = Constants.kDefaultArmSetpointDegrees;
 
-  // The arm gearbox represents a gearbox containing two Vex 775pro motors.
-  private final DCMotor armGearbox = DCMotor.getVex775Pro(2);
+  // The arm gearbox contains two Vex 775pro motors driving the arm through a
+  // reduction.
+  private final Gearbox armGearbox = new Gearbox(DCMotor.kVex775Pro, 2, Constants.kArmReduction);
 
   // Standard classes for controlling our arm
   private final PIDController controller = new PIDController(armKp, 0, 0);
@@ -43,7 +45,6 @@ public class Arm implements AutoCloseable {
   private final SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           armGearbox,
-          Constants.kArmReduction,
           SingleJointedArmSim.estimateMOI(Constants.kArmLength, Constants.kArmMass),
           Constants.kArmLength,
           Constants.kMinAngleRads,
