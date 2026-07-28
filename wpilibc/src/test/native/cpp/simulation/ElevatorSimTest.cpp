@@ -19,8 +19,9 @@
   EXPECT_LE(wpi::units::math::abs(val1 - val2), eps)
 
 TEST(ElevatorSimTest, StateSpaceSim) {
-  wpi::sim::ElevatorSim sim(wpi::math::DCMotor::Vex775Pro(4), 14.67, 8_kg,
-                            0.75_in, 0_m, 3_m, true, 0_m, {0.01});
+  wpi::sim::ElevatorSim sim(
+      wpi::math::Gearbox{wpi::math::DCMotor::kVex775Pro, 4, 14.67}, 8_kg,
+      0.75_in, 0_m, 3_m, true, 0_m, {0.01});
   wpi::math::PIDController controller(10, 0.0, 0.0);
 
   wpi::PWMVictorSPX motor(0);
@@ -46,16 +47,18 @@ TEST(ElevatorSimTest, StateSpaceSim) {
 
 TEST(ElevatorSimTest, InitialState) {
   constexpr auto startingHeight = 0.5_m;
-  wpi::sim::ElevatorSim sim(wpi::math::DCMotor::KrakenX60(2), 20, 8_kg, 0.1_m,
-                            0_m, 1_m, true, startingHeight, {0.01, 0.0});
+  wpi::sim::ElevatorSim sim(
+      wpi::math::Gearbox{wpi::math::DCMotor::kKrakenX60, 2, 20}, 8_kg, 0.1_m,
+      0_m, 1_m, true, startingHeight, {0.01, 0.0});
 
   EXPECT_DOUBLE_EQ(startingHeight.value(), sim.GetPosition().value());
   EXPECT_DOUBLE_EQ(0, sim.GetVelocity().value());
 }
 
 TEST(ElevatorSimTest, MinMax) {
-  wpi::sim::ElevatorSim sim(wpi::math::DCMotor::Vex775Pro(4), 14.67, 8_kg,
-                            0.75_in, 0_m, 1_m, true, 0_m);
+  wpi::sim::ElevatorSim sim(
+      wpi::math::Gearbox{wpi::math::DCMotor::kVex775Pro, 4, 14.67}, 8_kg,
+      0.75_in, 0_m, 1_m, true, 0_m);
   for (size_t i = 0; i < 100; ++i) {
     sim.SetInput(wpi::math::Vectord<1>{0.0});
     sim.Update(20_ms);
@@ -74,14 +77,14 @@ TEST(ElevatorSimTest, MinMax) {
 }
 
 TEST(ElevatorSimTest, Stability) {
-  wpi::sim::ElevatorSim sim{wpi::math::DCMotor::Vex775Pro(4),
-                            100,
-                            4_kg,
-                            0.5_in,
-                            0_m,
-                            10_m,
-                            false,
-                            0_m};
+  wpi::sim::ElevatorSim sim{
+      wpi::math::Gearbox{wpi::math::DCMotor::kVex775Pro, 4, 100},
+      4_kg,
+      0.5_in,
+      0_m,
+      10_m,
+      false,
+      0_m};
 
   sim.SetState(wpi::math::Vectord<2>{0.0, 0.0});
   sim.SetInput(wpi::math::Vectord<1>{12.0});
@@ -91,7 +94,8 @@ TEST(ElevatorSimTest, Stability) {
 
   wpi::math::LinearSystem<2, 1, 1> system =
       wpi::math::Models::ElevatorFromPhysicalConstants(
-          wpi::math::DCMotor::Vex775Pro(4), 4_kg, 0.5_in, 100)
+          wpi::math::Gearbox{wpi::math::DCMotor::kVex775Pro, 4, 100}, 4_kg,
+          0.5_in)
           .Slice(0);
   EXPECT_NEAR_UNITS(wpi::units::meter_t{system.CalculateX(
                         wpi::math::Vectord<2>{0.0, 0.0},
@@ -100,12 +104,16 @@ TEST(ElevatorSimTest, Stability) {
 }
 
 TEST(ElevatorSimTest, CurrentDraw) {
-  constexpr auto motor = wpi::math::DCMotor::KrakenX60(2);
-  wpi::sim::ElevatorSim sim(motor, 20, 8_kg, 0.1_m, 0_m, 1_m, true, 0_m,
+  constexpr wpi::math::Gearbox gearbox{wpi::math::DCMotor::kKrakenX60, 2, 20};
+  wpi::sim::ElevatorSim sim(gearbox, 8_kg, 0.1_m, 0_m, 1_m, true, 0_m,
                             {0.01, 0.0});
 
   EXPECT_DOUBLE_EQ(0.0, sim.GetCurrentDraw().value());
-  sim.SetInputVoltage(motor.Voltage(motor.Torque(60_A), 0_rad_per_s));
+  // Drive the gearbox with the voltage its motors need to produce 60 A of total
+  // draw at zero speed.
+  const auto& motor = gearbox.motor;
+  sim.SetInputVoltage(
+      motor.Voltage(motor.Torque(60_A / gearbox.numMotors), 0_rad_per_s));
   sim.Update(100_ms);
   // Current draw should start at 60 A and decrease as the back-EMF catches up
   EXPECT_TRUE(0_A < sim.GetCurrentDraw() && sim.GetCurrentDraw() < 60_A);

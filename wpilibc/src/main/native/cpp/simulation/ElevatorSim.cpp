@@ -13,7 +13,7 @@ using namespace wpi;
 using namespace wpi::sim;
 
 ElevatorSim::ElevatorSim(const wpi::math::LinearSystem<2, 1, 2>& plant,
-                         const wpi::math::DCMotor& gearbox,
+                         const wpi::math::Gearbox& gearbox,
                          wpi::units::meter_t minHeight,
                          wpi::units::meter_t maxHeight, bool simulateGravity,
                          wpi::units::meter_t startingHeight,
@@ -26,7 +26,7 @@ ElevatorSim::ElevatorSim(const wpi::math::LinearSystem<2, 1, 2>& plant,
   SetState(startingHeight, 0_mps);
 }
 
-ElevatorSim::ElevatorSim(const wpi::math::DCMotor& gearbox, double gearing,
+ElevatorSim::ElevatorSim(const wpi::math::Gearbox& gearbox,
                          wpi::units::kilogram_t carriageMass,
                          wpi::units::meter_t drumRadius,
                          wpi::units::meter_t minHeight,
@@ -34,7 +34,7 @@ ElevatorSim::ElevatorSim(const wpi::math::DCMotor& gearbox, double gearing,
                          wpi::units::meter_t startingHeight,
                          const std::array<double, 2>& measurementStdDevs)
     : ElevatorSim(wpi::math::Models::ElevatorFromPhysicalConstants(
-                      gearbox, carriageMass, drumRadius, gearing),
+                      gearbox, carriageMass, drumRadius),
                   gearbox, minHeight, maxHeight, simulateGravity,
                   startingHeight, measurementStdDevs) {}
 
@@ -43,7 +43,7 @@ template <typename Distance>
            std::same_as<wpi::units::radian, Distance>
 ElevatorSim::ElevatorSim(decltype(1_V / Velocity_t<Distance>(1)) kV,
                          decltype(1_V / Acceleration_t<Distance>(1)) kA,
-                         const wpi::math::DCMotor& gearbox,
+                         const wpi::math::Gearbox& gearbox,
                          wpi::units::meter_t minHeight,
                          wpi::units::meter_t maxHeight, bool simulateGravity,
                          wpi::units::meter_t startingHeight,
@@ -92,10 +92,12 @@ wpi::units::ampere_t ElevatorSim::GetCurrentDraw() const {
       wpi::units::volt, wpi::units::inverse<wpi::units::meters_per_second>>>;
   Kv_t Kv = Kv_t{-kA * m_plant.A(1, 1)};
   wpi::units::meters_per_second_t velocity{m_x(1)};
-  wpi::units::radians_per_second_t motorVelocity = velocity * Kv * m_gearbox.Kv;
+  wpi::units::radians_per_second_t motorVelocity =
+      velocity * Kv * m_gearbox.motor.Kv;
 
   // Perform calculation and return.
-  return m_gearbox.Current(motorVelocity, wpi::units::volt_t{m_u(0)}) *
+  return m_gearbox.numMotors *
+         m_gearbox.motor.Current(motorVelocity, wpi::units::volt_t{m_u(0)}) *
          wpi::util::sgn(m_u(0));
 }
 
