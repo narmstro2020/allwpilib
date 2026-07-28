@@ -15,8 +15,11 @@ class Elevator:
     """Represents the elevator subsystem."""
 
     def __init__(self) -> None:
-        # This gearbox represents a gearbox containing 4 Vex 775pro motors.
-        self.elevator_gearbox = wpimath.DCMotor.vex775_pro(4)
+        # This gearbox contains 4 Vex 775pro motors driving the elevator
+        # through a reduction.
+        self.elevator_gearbox = wpimath.Gearbox(
+            wpimath.DCMotor.vex775_pro, 4, constants.ELEVATOR_GEARING
+        )
 
         # Standard classes for controlling our elevator
         self.controller = wpimath.ProfiledPIDController(
@@ -39,7 +42,6 @@ class Elevator:
         # Simulation classes help us simulate what's going on, including gravity.
         self.elevator_sim = wpilib.simulation.ElevatorSim(
             self.elevator_gearbox,
-            constants.ELEVATOR_GEARING,
             constants.CARRIAGE_MASS,
             constants.ELEVATOR_DRUM_RADIUS,
             constants.MIN_ELEVATOR_HEIGHT,

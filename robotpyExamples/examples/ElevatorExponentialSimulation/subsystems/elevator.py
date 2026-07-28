@@ -14,8 +14,11 @@ import constants
 
 class Elevator:
     def __init__(self) -> None:
-        # This gearbox represents a gearbox containing 4 Vex 775pro motors.
-        self.elevator_gearbox = wpimath.DCMotor.neo(2)
+        # This gearbox contains 2 NEO motors driving the elevator through a
+        # reduction.
+        self.elevator_gearbox = wpimath.Gearbox(
+            wpimath.DCMotor.neo, 2, constants.ELEVATOR_GEARING
+        )
 
         self.profile = wpimath.ExponentialProfile(
             wpimath.ExponentialProfile.Constraints.from_characteristics(
@@ -46,7 +49,6 @@ class Elevator:
         # Simulation classes help us simulate what's going on, including gravity.
         self.elevator_sim = wpilib.simulation.ElevatorSim(
             self.elevator_gearbox,
-            constants.ELEVATOR_GEARING,
             constants.CARRIAGE_MASS,
             constants.ELEVATOR_DRUM_RADIUS,
             constants.MIN_ELEVATOR_HEIGHT,

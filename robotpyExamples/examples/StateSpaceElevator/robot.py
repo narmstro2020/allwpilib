@@ -55,10 +55,9 @@ class MyRobot(wpilib.TimedRobot):
 
         # This elevator is driven by two NEO motors.
         self.elevator_plant = wpimath.Models.elevator_from_physical_constants(
-            wpimath.DCMotor.neo(2),
+            wpimath.Gearbox(wpimath.DCMotor.neo, 2, ELEVATOR_GEARING),
             CARRIAGE_MASS,
             DRUM_RADIUS,
-            ELEVATOR_GEARING,
         ).slice(0)
 
         # The observer fuses our encoder data and voltage inputs to reject noise.

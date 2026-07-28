@@ -49,9 +49,8 @@ class MyRobot(wpilib.TimedRobot):
         # Inputs (what we can "put in"): [voltage], in volts.
         # Outputs (what we can measure): [position], in radians.
         self.arm_plant = wpimath.Models.single_jointed_arm_from_physical_constants(
-            wpimath.DCMotor.neo(2),
+            wpimath.Gearbox(wpimath.DCMotor.neo, 2, ARM_GEARING),
             ARM_MOI,
-            ARM_GEARING,
         ).slice(0)
 
         # The observer fuses our encoder data and voltage inputs to reject noise.

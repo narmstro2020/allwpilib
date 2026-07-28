@@ -58,8 +58,7 @@ class Drivetrain:
         self.drivetrain_simulator = wpilib.simulation.DifferentialDrivetrainSim(
             self.drivetrain_system,
             self.TRACKWIDTH,
-            wpimath.DCMotor.cim(2),
-            8,
+            wpimath.Gearbox(wpimath.DCMotor.cim, 2, 8),
             self.WHEEL_RADIUS,
         )
 

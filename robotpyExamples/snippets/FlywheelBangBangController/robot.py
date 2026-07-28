@@ -61,10 +61,10 @@ class MyRobot(wpilib.TimedRobot):
 
         # Simulation classes help us simulate our robot
 
-        self.gearbox = wpimath.DCMotor.neo(1)
+        self.gearbox = wpimath.Gearbox(wpimath.DCMotor.neo, 1, self.FLYWHEEL_GEARING)
 
         self.plant = wpimath.Models.flywheel_from_physical_constants(
-            self.gearbox, self.FLYWHEEL_GEARING, self.FLYWHEEL_MOMENT_OF_INERTIA
+            self.gearbox, self.FLYWHEEL_MOMENT_OF_INERTIA
         )
 
         self.flywheel_sim = wpilib.simulation.FlywheelSim(self.plant, self.gearbox)

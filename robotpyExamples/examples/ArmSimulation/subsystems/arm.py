@@ -19,8 +19,11 @@ class Arm:
         self.arm_kp = Constants.DEFAULT_ARM_KP
         self.arm_setpoint_degrees = Constants.DEFAULT_ARM_SETPOINT_DEGREES
 
-        # The arm gearbox represents a gearbox containing two Vex 775pro motors.
-        self.arm_gearbox = wpimath.DCMotor.vex775_pro(2)
+        # The arm gearbox contains two Vex 775pro motors driving the arm
+        # through a reduction.
+        self.arm_gearbox = wpimath.Gearbox(
+            wpimath.DCMotor.vex775_pro, 2, Constants.ARM_REDUCTION
+        )
 
         # Standard classes for controlling our arm
         self.controller = wpimath.PIDController(self.arm_kp, 0, 0)
@@ -34,7 +37,6 @@ class Arm:
         # to 255 degrees (rotated down in the back).
         self.arm_sim = wpilib.simulation.SingleJointedArmSim(
             self.arm_gearbox,
-            Constants.ARM_REDUCTION,
             wpilib.simulation.SingleJointedArmSim.estimate_moi(
                 Constants.ARM_LENGTH, Constants.ARM_MASS
             ),

@@ -42,9 +42,8 @@ class MyRobot(wpilib.TimedRobot):
         # Inputs (what we can "put in"): [voltage], in volts.
         # Outputs (what we can measure): [velocity], in radians per second.
         self.flywheel_plant = wpimath.Models.flywheel_from_physical_constants(
-            wpimath.DCMotor.neo(2),
+            wpimath.Gearbox(wpimath.DCMotor.neo, 2, FLYWHEEL_GEARING),
             FLYWHEEL_MOMENT_OF_INERTIA,
-            FLYWHEEL_GEARING,
         )
 
         # The observer fuses our encoder data and voltage inputs to reject noise.
