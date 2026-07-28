@@ -1,16 +1,16 @@
 classes:
   wpi::sim::DifferentialDrivetrainSim:
     typealias:
-    - wpi::math::DCMotor
+    - wpi::math::Gearbox
     - template <int S, int I, int O> using LinearSystem = wpi::math::LinearSystem<S, I, O>
     methods:
       DifferentialDrivetrainSim:
         overloads:
-          ? wpi::math::LinearSystem<2, 2, 2>, wpi::units::meter_t, wpi::math::DCMotor, double, wpi::units::meter_t, const std::array<double, 7>&
+          ? wpi::math::LinearSystem<2, 2, 2>, wpi::units::meter_t, wpi::math::Gearbox, wpi::units::meter_t, const std::array<double, 7>&
           : param_override:
               measurementStdDevs:
                 default: std::array<double, 7>{}
-          ? wpi::math::DCMotor, double, wpi::units::kilogram_square_meter_t, wpi::units::kilogram_t, wpi::units::meter_t, wpi::units::meter_t, const std::array<double, 7>&
+          ? wpi::math::Gearbox, wpi::units::kilogram_square_meter_t, wpi::units::kilogram_t, wpi::units::meter_t, wpi::units::meter_t, const std::array<double, 7>&
           : param_override:
               measurementStdDevs:
                 default: std::array<double, 7>{}
@@ -33,11 +33,11 @@ classes:
       Dynamics:
       CreateKitbotSim:
         overloads:
-          wpi::math::DCMotor, double, wpi::units::meter_t, const std::array<double, 7>&:
+          const wpi::math::Gearbox&, double, wpi::units::meter_t, const std::array<double, 7>&:
             param_override:
               measurementStdDevs:
                 default: std::array<double, 7>{}
-          wpi::math::DCMotor, double, wpi::units::meter_t, wpi::units::kilogram_square_meter_t, const std::array<double, 7>&:
+          const wpi::math::Gearbox&, double, wpi::units::meter_t, wpi::units::kilogram_square_meter_t, const std::array<double, 7>&:
             param_override:
               measurementStdDevs:
                 default: std::array<double, 7>{}

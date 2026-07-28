@@ -1,11 +1,11 @@
 classes:
-  wpi::sim::DCMotorSim:
+  wpi::sim::GearboxSim:
     typealias:
-    - wpi::math::DCMotor
+    - wpi::math::Gearbox
     methods:
-      DCMotorSim:
+      GearboxSim:
         overloads:
-          const wpi::math::LinearSystem<2, 1, 2>&, const wpi::math::DCMotor&, const std::array<double, 2>&:
+          const wpi::math::LinearSystem<2, 1, 2>&, const wpi::math::Gearbox&, const std::array<double, 2>&:
             param_override:
               plant:
                 x_type: wpi::math::LinearSystem<2,1,2>
@@ -18,18 +18,17 @@ classes:
       GetTorque:
       GetInputVoltage:
       GetGearbox:
-      GetGearing:
       GetJ:
       SetAngle:
       SetAngularVelocity:
 
 inline_code: |
-  cls_DCMotorSim
+  cls_GearboxSim
     // java API compatibility
-    .def("get_angular_position_rotations", [](const DCMotorSim &self) {
+    .def("get_angular_position_rotations", [](const GearboxSim &self) {
       return wpi::units::turn_t{self.GetAngularPosition()};
-    }, py::doc("Returns the DC motor position in rotations"))
-    .def("get_angular_velocity_rpm", [](const DCMotorSim &self) {
+    }, py::doc("Returns the gearbox position in rotations"))
+    .def("get_angular_velocity_rpm", [](const GearboxSim &self) {
       return wpi::units::revolutions_per_minute_t{self.GetAngularVelocity()};
-    }, py::doc("Returns the DC motor velocity in revolutions per minute"))
+    }, py::doc("Returns the gearbox velocity in revolutions per minute"))
   ;

@@ -1545,13 +1545,13 @@ def wpilib_simulation_extension(srcs = [], header_to_dat_deps = [], extra_hdrs =
             ],
         ),
         struct(
-            class_name = "DCMotorSim",
-            yml_file = "semiwrap/simulation/DCMotorSim.yml",
+            class_name = "GearboxSim",
+            yml_file = "semiwrap/simulation/GearboxSim.yml",
             header_root = "$(execpath :robotpy-native-wpilib.copy_headers)",
-            header_file = "$(execpath :robotpy-native-wpilib.copy_headers)/wpi/simulation/DCMotorSim.hpp",
+            header_file = "$(execpath :robotpy-native-wpilib.copy_headers)/wpi/simulation/GearboxSim.hpp",
             tmpl_class_names = [],
             trampolines = [
-                ("wpi::sim::DCMotorSim", "wpi__sim__DCMotorSim.hpp"),
+                ("wpi::sim::GearboxSim", "wpi__sim__GearboxSim.hpp"),
             ],
         ),
         struct(
