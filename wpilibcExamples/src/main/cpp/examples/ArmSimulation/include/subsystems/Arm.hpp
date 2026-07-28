@@ -32,8 +32,10 @@ class Arm {
   double armKp = kDefaultArmKp;
   wpi::units::degree_t armSetpoint = kDefaultArmSetpoint;
 
-  // The arm gearbox represents a gearbox containing two Vex 775pro motors.
-  wpi::math::DCMotor armGearbox = wpi::math::DCMotor::Vex775Pro(2);
+  // The arm gearbox contains two Vex 775pro motors driving the arm through a
+  // reduction.
+  wpi::math::Gearbox armGearbox{wpi::math::DCMotor::kVex775Pro, 2,
+                                kArmReduction};
 
   // Standard classes for controlling our arm
   wpi::math::PIDController controller{armKp, 0, 0};
@@ -46,7 +48,6 @@ class Arm {
   // with a standard deviation of 1 encoder tick.
   wpi::sim::SingleJointedArmSim armSim{
       armGearbox,
-      kArmReduction,
       wpi::sim::SingleJointedArmSim::EstimateMOI(kArmLength, kArmMass),
       kArmLength,
       kMinAngle,

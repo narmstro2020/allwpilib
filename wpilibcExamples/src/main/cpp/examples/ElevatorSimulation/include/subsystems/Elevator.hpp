@@ -29,8 +29,10 @@ class Elevator {
   void Stop();
 
  private:
-  // This gearbox represents a gearbox containing 4 Vex 775pro motors.
-  wpi::math::DCMotor elevatorGearbox = wpi::math::DCMotor::Vex775Pro(4);
+  // This gearbox contains 4 Vex 775pro motors driving the elevator through a
+  // reduction.
+  wpi::math::Gearbox elevatorGearbox{wpi::math::DCMotor::kVex775Pro, 4,
+                                     Constants::kElevatorGearing};
 
   // Standard classes for controlling our elevator
   wpi::math::TrapezoidProfile<wpi::units::meters>::Constraints constraints{
@@ -49,7 +51,6 @@ class Elevator {
 
   // Simulation classes help us simulate what's going on, including gravity.
   wpi::sim::ElevatorSim elevatorSim{elevatorGearbox,
-                                    Constants::kElevatorGearing,
                                     Constants::kCarriageMass,
                                     Constants::kElevatorDrumRadius,
                                     Constants::kMinElevatorHeight,

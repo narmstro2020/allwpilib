@@ -44,7 +44,8 @@ class Robot : public wpi::TimedRobot {
   // Outputs (what we can measure): [position], in meters.
   wpi::math::LinearSystem<2, 1, 1> elevatorPlant =
       wpi::math::Models::ElevatorFromPhysicalConstants(
-          wpi::math::DCMotor::NEO(2), kCarriageMass, kDrumRadius, kGearRatio)
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, kGearRatio},
+          kCarriageMass, kDrumRadius)
           .Slice(0);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.

@@ -95,10 +95,10 @@ class Robot : public wpi::TimedRobot {
   static constexpr wpi::units::kilogram_square_meter_t
       kFlywheelMomentOfInertia = 0.5 * 1.5_lb * 4_in * 4_in;
 
-  wpi::math::DCMotor gearbox = wpi::math::DCMotor::NEO(1);
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kNEO, 1, kFlywheelGearing};
   wpi::math::LinearSystem<1, 1, 1> plant{
       wpi::math::Models::FlywheelFromPhysicalConstants(
-          gearbox, kFlywheelMomentOfInertia, kFlywheelGearing)};
+          gearbox, kFlywheelMomentOfInertia)};
 
   wpi::sim::FlywheelSim flywheelSim{plant, gearbox};
   wpi::sim::EncoderSim encoderSim{encoder};

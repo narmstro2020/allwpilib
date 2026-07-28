@@ -41,8 +41,8 @@ class Robot : public wpi::TimedRobot {
   // Outputs (what we can measure): [velocity], in radians per second.
   wpi::math::LinearSystem<1, 1, 1> flywheelPlant =
       wpi::math::Models::FlywheelFromPhysicalConstants(
-          wpi::math::DCMotor::NEO(2), kFlywheelMomentOfInertia,
-          kFlywheelGearing);
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, kFlywheelGearing},
+          kFlywheelMomentOfInertia);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
   wpi::math::KalmanFilter<1, 1, 1> observer{

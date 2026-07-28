@@ -173,5 +173,6 @@ class Drivetrain {
       wpi::math::Models::DifferentialDriveFromSysId(
           1.98_V / 1_mps, 0.2_V / 1_mps_sq, 1.5_V / 1_mps, 0.3_V / 1_mps_sq);
   wpi::sim::DifferentialDrivetrainSim drivetrainSimulator{
-      drivetrainSystem, kTrackwidth, wpi::math::DCMotor::CIM(2), 8, 2_in};
+      drivetrainSystem, kTrackwidth,
+      wpi::math::Gearbox{wpi::math::DCMotor::kCIM, 2, 8}, 2_in};
 };

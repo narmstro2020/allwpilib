@@ -47,7 +47,7 @@ class Robot : public wpi::TimedRobot {
   // Outputs (what we can measure): [position], in radians.
   wpi::math::LinearSystem<2, 1, 1> armPlant =
       wpi::math::Models::SingleJointedArmFromPhysicalConstants(
-          wpi::math::DCMotor::NEO(2), kArmMOI, kArmGearing)
+          wpi::math::Gearbox{wpi::math::DCMotor::kNEO, 2, kArmGearing}, kArmMOI)
           .Slice(0);
 
   // The observer fuses our encoder data and voltage inputs to reject noise.
