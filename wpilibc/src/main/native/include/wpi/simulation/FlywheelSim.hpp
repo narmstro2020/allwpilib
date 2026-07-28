@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "wpi/math/system/DCMotor.hpp"
+#include "wpi/math/system/Gearbox.hpp"
 #include "wpi/math/system/LinearSystem.hpp"
 #include "wpi/simulation/LinearSystemSim.hpp"
 #include "wpi/units/angular_acceleration.hpp"
@@ -15,6 +15,9 @@
 namespace wpi::sim {
 /**
  * Represents a simulated flywheel mechanism.
+ *
+ * Velocities and torques are those of the flywheel itself; current draw is the
+ * total across all of the gearbox's motors.
  */
 class FlywheelSim : public LinearSystemSim<1, 1, 1> {
  public:
@@ -23,12 +26,13 @@ class FlywheelSim : public LinearSystemSim<1, 1, 1> {
    *
    * @param plant The linear system representing the flywheel. This system can
    *     be created with wpi::math::Models::FlywheelFromPhysicalConstants() or
-   *     wpi::math::Models::FlywheelFromSysId().
-   * @param gearbox The type of and number of motors in the flywheel gearbox.
+   *     wpi::math::Models::FlywheelFromSysId(). It must have been built with
+   * the same reduction as the gearbox.
+   * @param gearbox The gearbox driving the flywheel.
    * @param measurementStdDevs The standard deviation of the measurement noise.
    */
   FlywheelSim(const wpi::math::LinearSystem<1, 1, 1>& plant,
-              const wpi::math::DCMotor& gearbox,
+              const wpi::math::Gearbox& gearbox,
               const std::array<double, 1>& measurementStdDevs = {0.0});
 
   using LinearSystemSim::SetState;
@@ -62,7 +66,7 @@ class FlywheelSim : public LinearSystemSim<1, 1, 1> {
   wpi::units::newton_meter_t GetTorque() const;
 
   /**
-   * Returns the flywheel's current draw.
+   * Returns the total current drawn by the gearbox's motors.
    *
    * @return The flywheel's current draw.
    */
@@ -85,12 +89,7 @@ class FlywheelSim : public LinearSystemSim<1, 1, 1> {
   /**
    * Returns the gearbox.
    */
-  wpi::math::DCMotor Gearbox() const { return m_gearbox; }
-
-  /**
-   * Returns the gearing;
-   */
-  double Gearing() const { return m_gearing; }
+  wpi::math::Gearbox Gearbox() const { return m_gearbox; }
 
   /**
    * Returns the moment of inertia
@@ -98,8 +97,7 @@ class FlywheelSim : public LinearSystemSim<1, 1, 1> {
   wpi::units::kilogram_square_meter_t J() const { return m_j; }
 
  private:
-  wpi::math::DCMotor m_gearbox;
-  double m_gearing;
+  wpi::math::Gearbox m_gearbox;
   wpi::units::kilogram_square_meter_t m_j;
 };
 }  // namespace wpi::sim

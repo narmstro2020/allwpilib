@@ -11,7 +11,7 @@ using namespace wpi;
 using namespace wpi::sim;
 
 FlywheelSim::FlywheelSim(const wpi::math::LinearSystem<1, 1, 1>& plant,
-                         const wpi::math::DCMotor& gearbox,
+                         const wpi::math::Gearbox& gearbox,
                          const std::array<double, 1>& measurementStdDevs)
     : LinearSystemSim<1, 1, 1>(plant, measurementStdDevs),
       m_gearbox(gearbox),
@@ -23,18 +23,16 @@ FlywheelSim::FlywheelSim(const wpi::math::LinearSystem<1, 1, 1>& plant,
       //   A = -G²Kₜ/(KᵥRJ)
       //   B = GKₜ/(RJ)
       //
-      // Solve for G.
-      //
-      //   A/B = -G/Kᵥ
-      //   G = -KᵥA/B
-      //
       // Solve for J.
       //
       //   B = GKₜ/(RJ)
       //   J = GKₜ/(RB)
-      m_gearing(-gearbox.Kv.value() * m_plant.A(0, 0) / m_plant.B(0, 0)),
-      m_j(m_gearing * gearbox.Kt.value() /
-          (gearbox.R.value() * m_plant.B(0, 0))) {}
+      //
+      // Kₜ here is that of the gearbox as a whole, so it scales with the number
+      // of motors. G is taken from the gearbox, so the plant must have been
+      // built with the same reduction.
+      m_j(gearbox.reduction * gearbox.numMotors * gearbox.motor.Kt.value() /
+          (gearbox.motor.R.value() * m_plant.B(0, 0))) {}
 
 void FlywheelSim::SetVelocity(wpi::units::radians_per_second_t velocity) {
   LinearSystemSim::SetState(wpi::math::Vectord<1>{velocity.value()});
@@ -56,10 +54,10 @@ wpi::units::newton_meter_t FlywheelSim::GetTorque() const {
 }
 
 wpi::units::ampere_t FlywheelSim::GetCurrentDraw() const {
-  // I = V / R - omega / (Kv * R)
-  // Reductions are greater than 1, so a reduction of 10:1 would mean the motor
-  // is spinning 10x faster than the output.
-  return m_gearbox.Current(wpi::units::radians_per_second_t{m_x(0)} * m_gearing,
+  // Gearbox::Current() takes the velocity of the output and applies the
+  // reduction internally to get the motor velocity, and returns the total
+  // across all the motors.
+  return m_gearbox.Current(wpi::units::radians_per_second_t{m_x(0)},
                            wpi::units::volt_t{m_u(0)}) *
          wpi::util::sgn(m_u(0));
 }

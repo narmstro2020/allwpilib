@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "wpi/math/system/DCMotor.hpp"
+#include "wpi/math/system/Gearbox.hpp"
 #include "wpi/math/system/LinearSystem.hpp"
 #include "wpi/simulation/LinearSystemSim.hpp"
 #include "wpi/units/angle.hpp"
@@ -15,28 +15,32 @@
 
 namespace wpi::sim {
 /**
- * Represents a simulated DC motor mechanism.
+ * Represents a simulated gearbox driving a rotational mechanism.
+ *
+ * Positions, velocities and torques are those of the gearbox's output shaft;
+ * current draw is the total across all of its motors.
  */
-class DCMotorSim : public LinearSystemSim<2, 1, 2> {
+class GearboxSim : public LinearSystemSim<2, 1, 2> {
  public:
   /**
-   * Creates a simulated DC motor mechanism.
+   * Creates a simulated gearbox.
    *
-   * @param plant The linear system representing the DC motor. This system can
+   * @param plant The linear system representing the mechanism. This system can
    *     be created with
    *     wpi::math::Models::SingleJointedArmFromPhysicalConstants() or
-   *     wpi::math::Models::SingleJointedArmFromSysId().
-   * @param gearbox The type of and number of motors in the DC motor gearbox.
+   *     wpi::math::Models::SingleJointedArmFromSysId(). It must have been built
+   *     with the same reduction as the gearbox.
+   * @param gearbox The gearbox driving the mechanism.
    * @param measurementStdDevs The standard deviation of the measurement noise.
    */
-  DCMotorSim(const wpi::math::LinearSystem<2, 1, 2>& plant,
-             const wpi::math::DCMotor& gearbox,
+  GearboxSim(const wpi::math::LinearSystem<2, 1, 2>& plant,
+             const wpi::math::Gearbox& gearbox,
              const std::array<double, 2>& measurementStdDevs = {0.0, 0.0});
 
   using LinearSystemSim::SetState;
 
   /**
-   * Sets the state of the DC motor.
+   * Sets the state of the gearbox.
    *
    * @param angularPosition The new position
    * @param angularVelocity The new velocity
@@ -45,63 +49,63 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
                 wpi::units::radians_per_second_t angularVelocity);
 
   /**
-   * Sets the DC motor's angular position.
+   * Sets the gearbox's angular position.
    *
    * @param angularPosition The new position in radians.
    */
   void SetAngle(wpi::units::radian_t angularPosition);
 
   /**
-   * Sets the DC motor's angular velocity.
+   * Sets the gearbox's angular velocity.
    *
    * @param angularVelocity The new velocity in radians per second.
    */
   void SetAngularVelocity(wpi::units::radians_per_second_t angularVelocity);
 
   /**
-   * Returns the DC motor position.
+   * Returns the gearbox's angular position.
    *
-   * @return The DC motor position.
+   * @return The gearbox's position.
    */
   wpi::units::radian_t GetAngularPosition() const;
 
   /**
-   * Returns the DC motor velocity.
+   * Returns the gearbox's angular velocity.
    *
-   * @return The DC motor velocity.
+   * @return The gearbox's velocity.
    */
   wpi::units::radians_per_second_t GetAngularVelocity() const;
 
   /**
-   * Returns the DC motor acceleration.
+   * Returns the gearbox's angular acceleration.
    *
-   * @return The DC motor acceleration
+   * @return The gearbox's acceleration.
    */
   wpi::units::radians_per_second_squared_t GetAngularAcceleration() const;
 
   /**
-   * Returns the DC motor torque.
+   * Returns the torque at the gearbox's output.
    *
-   * @return The DC motor torque
+   * @return The output torque.
    */
   wpi::units::newton_meter_t GetTorque() const;
 
   /**
-   * Returns the DC motor current draw.
+   * Returns the total current drawn by the gearbox's motors.
    *
-   * @return The DC motor current draw.
+   * @return The gearbox's current draw.
    */
   wpi::units::ampere_t GetCurrentDraw() const;
 
   /**
-   * Gets the input voltage for the DC motor.
+   * Gets the input voltage for the gearbox.
    *
-   * @return The DC motor input voltage.
+   * @return The gearbox's input voltage.
    */
   wpi::units::volt_t GetInputVoltage() const;
 
   /**
-   * Sets the input voltage for the DC motor.
+   * Sets the input voltage for the gearbox.
    *
    * @param voltage The input voltage.
    */
@@ -110,21 +114,15 @@ class DCMotorSim : public LinearSystemSim<2, 1, 2> {
   /**
    * Returns the gearbox.
    */
-  const wpi::math::DCMotor& GetGearbox() const;
+  const wpi::math::Gearbox& GetGearbox() const;
 
   /**
-   * Returns the gearing;
-   */
-  double GetGearing() const;
-
-  /**
-   * Returns the moment of inertia
+   * Returns the moment of inertia of the driven mechanism.
    */
   wpi::units::kilogram_square_meter_t GetJ() const;
 
  private:
-  wpi::math::DCMotor m_gearbox;
-  double m_gearing;
+  wpi::math::Gearbox m_gearbox;
   wpi::units::kilogram_square_meter_t m_j;
 };
 }  // namespace wpi::sim

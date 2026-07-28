@@ -28,6 +28,16 @@ typedef struct _wpi_proto_ProtobufDCMotor {
     double free_speed;
 } wpi_proto_ProtobufDCMotor;
 
+typedef struct _wpi_proto_ProtobufGearbox {
+    static const pb_msgdesc_t* msg_descriptor(void) noexcept;
+    static std::string_view msg_name(void) noexcept;
+    static pb_filedesc_t file_descriptor(void) noexcept;
+
+    pb_callback_t motor;
+    uint32_t num_motors;
+    double reduction;
+} wpi_proto_ProtobufGearbox;
+
 typedef struct _wpi_proto_ProtobufLinearSystem {
     static const pb_msgdesc_t* msg_descriptor(void) noexcept;
     static std::string_view msg_name(void) noexcept;
@@ -45,8 +55,10 @@ typedef struct _wpi_proto_ProtobufLinearSystem {
 
 /* Initializer values for message structs */
 #define wpi_proto_ProtobufDCMotor_init_default   {0, 0, 0, 0, 0}
+#define wpi_proto_ProtobufGearbox_init_default   {{{NULL}, NULL}, 0, 0}
 #define wpi_proto_ProtobufLinearSystem_init_default {0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
 #define wpi_proto_ProtobufDCMotor_init_zero      {0, 0, 0, 0, 0}
+#define wpi_proto_ProtobufGearbox_init_zero      {{{NULL}, NULL}, 0, 0}
 #define wpi_proto_ProtobufLinearSystem_init_zero {0, 0, 0, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}, {{NULL}, NULL}}
 
 /* Field tags (for use in manual encoding/decoding) */
@@ -55,6 +67,9 @@ typedef struct _wpi_proto_ProtobufLinearSystem {
 #define wpi_proto_ProtobufDCMotor_stall_current_tag 3
 #define wpi_proto_ProtobufDCMotor_free_current_tag 4
 #define wpi_proto_ProtobufDCMotor_free_speed_tag 5
+#define wpi_proto_ProtobufGearbox_motor_tag      1
+#define wpi_proto_ProtobufGearbox_num_motors_tag 2
+#define wpi_proto_ProtobufGearbox_reduction_tag  3
 #define wpi_proto_ProtobufLinearSystem_num_states_tag 1
 #define wpi_proto_ProtobufLinearSystem_num_inputs_tag 2
 #define wpi_proto_ProtobufLinearSystem_num_outputs_tag 3
@@ -73,6 +88,14 @@ X(a, STATIC,   SINGULAR, DOUBLE,   free_speed,        5)
 #define wpi_proto_ProtobufDCMotor_CALLBACK NULL
 #define wpi_proto_ProtobufDCMotor_DEFAULT NULL
 
+#define wpi_proto_ProtobufGearbox_FIELDLIST(X, a) \
+X(a, CALLBACK, OPTIONAL, MESSAGE,  motor,             1) \
+X(a, STATIC,   SINGULAR, UINT32,   num_motors,        2) \
+X(a, STATIC,   SINGULAR, DOUBLE,   reduction,         3)
+#define wpi_proto_ProtobufGearbox_CALLBACK pb_default_field_callback
+#define wpi_proto_ProtobufGearbox_DEFAULT NULL
+#define wpi_proto_ProtobufGearbox_motor_MSGTYPE wpi_proto_ProtobufDCMotor
+
 #define wpi_proto_ProtobufLinearSystem_FIELDLIST(X, a_) \
 X(a_, STATIC,   SINGULAR, UINT32,   num_states,        1) \
 X(a_, STATIC,   SINGULAR, UINT32,   num_inputs,        2) \
@@ -89,6 +112,7 @@ X(a_, CALLBACK, OPTIONAL, MESSAGE,  d,                 7)
 #define wpi_proto_ProtobufLinearSystem_d_MSGTYPE wpi_proto_ProtobufMatrix
 
 /* Maximum encoded size of messages (where known) */
+/* wpi_proto_ProtobufGearbox_size depends on runtime parameters */
 /* wpi_proto_ProtobufLinearSystem_size depends on runtime parameters */
 #define WPI_PROTO_WPIMATH_PROTOBUF_SYSTEM_NPB_H_MAX_SIZE wpi_proto_ProtobufDCMotor_size
 #define wpi_proto_ProtobufDCMotor_size           45

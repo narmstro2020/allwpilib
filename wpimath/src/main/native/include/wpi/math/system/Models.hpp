@@ -10,7 +10,7 @@
 #include <gcem.hpp>
 
 #include "wpi/math/linalg/EigenCore.hpp"
-#include "wpi/math/system/DCMotor.hpp"
+#include "wpi/math/system/Gearbox.hpp"
 #include "wpi/math/system/LinearSystem.hpp"
 #include "wpi/units/acceleration.hpp"
 #include "wpi/units/angle.hpp"
@@ -47,25 +47,23 @@ class WPILIB_DLLEXPORT Models {
    * The states are [angular velocity], the inputs are [voltage], and the
    * outputs are [angular velocity].
    *
-   * @param motor The motor (or gearbox) attached to the flywheel.
+   * @param gearbox The gearbox attached to the flywheel.
    * @param J The moment of inertia J of the flywheel.
-   * @param gearing Gear ratio from motor to flywheel (greater than 1 is a
-   *     reduction).
-   * @throws std::domain_error if J <= 0 or gearing <= 0.
+   * @throws std::domain_error if J <= 0.
    */
   static constexpr LinearSystem<1, 1, 1> FlywheelFromPhysicalConstants(
-      DCMotor motor, wpi::units::kilogram_square_meter_t J, double gearing) {
+      const Gearbox& gearbox, wpi::units::kilogram_square_meter_t J) {
     if (J <= 0_kg_sq_m) {
       throw std::domain_error("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw std::domain_error("gearing must be greater than zero.");
-    }
+
+    const auto& motor = gearbox.motor;
+    double G = gearbox.reduction;
+    auto Kt = gearbox.numMotors * motor.Kt;
 
     Matrixd<1, 1> A{
-        {(-gcem::pow(gearing, 2) * motor.Kt / (motor.Kv * motor.R * J))
-             .value()}};
-    Matrixd<1, 1> B{{(gearing * motor.Kt / (motor.R * J)).value()}};
+        {(-gcem::pow(G, 2) * Kt / (motor.Kv * motor.R * J)).value()}};
+    Matrixd<1, 1> B{{(G * Kt / (motor.R * J)).value()}};
     Matrixd<1, 1> C{{1.0}};
     Matrixd<1, 1> D{{0.0}};
 
@@ -108,33 +106,31 @@ class WPILIB_DLLEXPORT Models {
    * The states are [position, velocity], the inputs are [voltage], and the
    * outputs are [position, velocity].
    *
-   * @param motor The motor (or gearbox) attached to the carriage.
+   * @param gearbox The gearbox attached to the carriage.
    * @param mass The mass of the elevator carriage, in kilograms.
    * @param radius The radius of the elevator's driving drum, in meters.
-   * @param gearing Gear ratio from motor to carriage (greater than 1 is a
-   *     reduction).
-   * @throws std::domain_error if mass <= 0, radius <= 0, or gearing <= 0.
+   * @throws std::domain_error if mass <= 0 or radius <= 0.
    */
   static constexpr LinearSystem<2, 1, 2> ElevatorFromPhysicalConstants(
-      DCMotor motor, wpi::units::kilogram_t mass, wpi::units::meter_t radius,
-      double gearing) {
+      const Gearbox& gearbox, wpi::units::kilogram_t mass,
+      wpi::units::meter_t radius) {
     if (mass <= 0_kg) {
       throw std::domain_error("mass must be greater than zero.");
     }
     if (radius <= 0_m) {
       throw std::domain_error("radius must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw std::domain_error("gearing must be greater than zero.");
-    }
+
+    const auto& motor = gearbox.motor;
+    double G = gearbox.reduction;
+    auto Kt = gearbox.numMotors * motor.Kt;
 
     Matrixd<2, 2> A{
         {0.0, 1.0},
-        {0.0, (-gcem::pow(gearing, 2) * motor.Kt /
+        {0.0, (-gcem::pow(G, 2) * Kt /
                (motor.R * wpi::units::math::pow<2>(radius) * mass * motor.Kv))
                   .value()}};
-    Matrixd<2, 1> B{{0.0},
-                    {(gearing * motor.Kt / (motor.R * radius * mass)).value()}};
+    Matrixd<2, 1> B{{0.0}, {(G * Kt / (motor.R * radius * mass)).value()}};
     Matrixd<2, 2> C{{1.0, 0.0}, {0.0, 1.0}};
     Matrixd<2, 1> D{{0.0}, {0.0}};
 
@@ -178,26 +174,24 @@ class WPILIB_DLLEXPORT Models {
    * The states are [angle, angular velocity], the inputs are [voltage], and the
    * outputs are [angle, angular velocity].
    *
-   * @param motor The motor (or gearbox) attached to the arm.
+   * @param gearbox The gearbox attached to the arm.
    * @param J The moment of inertia J of the arm.
-   * @param gearing Gear ratio from motor to arm (greater than 1 is a
-   *     reduction).
-   * @throws std::domain_error if J <= 0 or gearing <= 0.
+   * @throws std::domain_error if J <= 0.
    */
   static constexpr LinearSystem<2, 1, 2> SingleJointedArmFromPhysicalConstants(
-      DCMotor motor, wpi::units::kilogram_square_meter_t J, double gearing) {
+      const Gearbox& gearbox, wpi::units::kilogram_square_meter_t J) {
     if (J <= 0_kg_sq_m) {
       throw std::domain_error("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw std::domain_error("gearing must be greater than zero.");
-    }
+
+    const auto& motor = gearbox.motor;
+    double G = gearbox.reduction;
+    auto Kt = gearbox.numMotors * motor.Kt;
 
     Matrixd<2, 2> A{
         {0.0, 1.0},
-        {0.0, (-gcem::pow(gearing, 2) * motor.Kt / (motor.Kv * motor.R * J))
-                  .value()}};
-    Matrixd<2, 1> B{{0.0}, {(gearing * motor.Kt / (motor.R * J)).value()}};
+        {0.0, (-gcem::pow(G, 2) * Kt / (motor.Kv * motor.R * J)).value()}};
+    Matrixd<2, 1> B{{0.0}, {(G * Kt / (motor.R * J)).value()}};
     Matrixd<2, 2> C{{1.0, 0.0}, {0.0, 1.0}};
     Matrixd<2, 1> D{{0.0}, {0.0}};
 
@@ -242,20 +236,17 @@ class WPILIB_DLLEXPORT Models {
    * voltage, right voltage], and the outputs are [left velocity, right
    * velocity].
    *
-   * @param motor The motor (or gearbox) driving the drivetrain.
+   * @param gearbox The gearbox driving one side of the drivetrain.
    * @param mass The mass of the robot in kilograms.
    * @param r The radius of the wheels in meters.
    * @param rb The radius of the base (half of the trackwidth), in meters.
    * @param J The moment of inertia of the robot.
-   * @param gearing Gear ratio from motor to wheel (greater than 1 is a
-   *     reduction).
-   * @throws std::domain_error if mass <= 0, r <= 0, rb <= 0, J <= 0, or
-   *         gearing <= 0.
+   * @throws std::domain_error if mass <= 0, r <= 0, rb <= 0, or J <= 0.
    */
   static constexpr LinearSystem<2, 2, 2> DifferentialDriveFromPhysicalConstants(
-      const DCMotor& motor, wpi::units::kilogram_t mass, wpi::units::meter_t r,
-      wpi::units::meter_t rb, wpi::units::kilogram_square_meter_t J,
-      double gearing) {
+      const Gearbox& gearbox, wpi::units::kilogram_t mass,
+      wpi::units::meter_t r, wpi::units::meter_t rb,
+      wpi::units::kilogram_square_meter_t J) {
     if (mass <= 0_kg) {
       throw std::domain_error("mass must be greater than zero.");
     }
@@ -268,13 +259,14 @@ class WPILIB_DLLEXPORT Models {
     if (J <= 0_kg_sq_m) {
       throw std::domain_error("J must be greater than zero.");
     }
-    if (gearing <= 0.0) {
-      throw std::domain_error("gearing must be greater than zero.");
-    }
 
-    auto C1 = -gcem::pow(gearing, 2) * motor.Kt /
+    const auto& motor = gearbox.motor;
+    double G = gearbox.reduction;
+    auto Kt = gearbox.numMotors * motor.Kt;
+
+    auto C1 = -gcem::pow(G, 2) * Kt /
               (motor.Kv * motor.R * wpi::units::math::pow<2>(r));
-    auto C2 = gearing * motor.Kt / (motor.R * r);
+    auto C2 = G * Kt / (motor.R * r);
 
     Matrixd<2, 2> A{
         {((1 / mass + wpi::units::math::pow<2>(rb) / J) * C1).value(),
