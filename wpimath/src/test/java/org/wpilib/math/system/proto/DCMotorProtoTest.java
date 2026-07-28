@@ -11,7 +11,7 @@ import org.wpilib.math.proto.ProtobufDCMotor;
 import org.wpilib.math.system.DCMotor;
 
 class DCMotorProtoTest {
-  private static final DCMotor DATA = new DCMotor(1.91, 19.1, 1.74, 1.74, 22.9, 3);
+  private static final DCMotor DATA = new DCMotor(1.91, 19.1, 1.74, 1.74, 22.9);
 
   @Test
   void testRoundtrip() {
