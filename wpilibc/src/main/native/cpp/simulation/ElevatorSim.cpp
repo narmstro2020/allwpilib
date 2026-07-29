@@ -83,21 +83,20 @@ wpi::units::meters_per_second_t ElevatorSim::GetVelocity() const {
 }
 
 wpi::units::ampere_t ElevatorSim::GetCurrentDraw() const {
-  // I = V / R - omega / (Kv * R)
-  // Reductions are greater than 1, so a reduction of 10:1 would mean the motor
-  // is spinning 10x faster than the output.
-
+  // The gearbox's output is the drum, so Current() wants the drum's angular
+  // velocity. The plant's kV times the motor's Kv works out to G/r, so scaling
+  // the carriage's linear velocity by it and dividing out the reduction gives
+  // v/r.
   double kA = 1.0 / m_plant.B(1, 0);
   using Kv_t = wpi::units::unit_t<wpi::units::compound_unit<
       wpi::units::volt, wpi::units::inverse<wpi::units::meters_per_second>>>;
   Kv_t Kv = Kv_t{-kA * m_plant.A(1, 1)};
   wpi::units::meters_per_second_t velocity{m_x(1)};
-  wpi::units::radians_per_second_t motorVelocity =
-      velocity * Kv * m_gearbox.motor.Kv;
+  wpi::units::radians_per_second_t drumVelocity =
+      velocity * Kv * m_gearbox.motor.Kv / m_gearbox.reduction;
 
   // Perform calculation and return.
-  return m_gearbox.numMotors *
-         m_gearbox.motor.Current(motorVelocity, wpi::units::volt_t{m_u(0)}) *
+  return m_gearbox.Current(drumVelocity, wpi::units::volt_t{m_u(0)}) *
          wpi::util::sgn(m_u(0));
 }
 

@@ -197,16 +197,14 @@ public class ElevatorSim extends LinearSystemSim<N2, N1, N2> {
    * @return The elevator current draw in amps.
    */
   public double getCurrentDraw() {
-    // I = V / R - omega / (Kv * R)
-    // Reductions are greater than 1, so a reduction of 10:1 would mean the motor is
-    // spinning 10x faster than the output
-    // v = r w, so w = v/r
+    // The gearbox's output is the drum, so getCurrent() wants the drum's angular
+    // velocity. The plant's kV times the motor's Kv works out to G/r, so scaling the
+    // carriage's linear velocity by it and dividing out the reduction gives v/r.
     double kA = 1 / m_plant.getB().get(1, 0);
     double kV = -m_plant.getA().get(1, 1) * kA;
-    double motorVelocity = m_x.get(1, 0) * kV * m_gearbox.motor.Kv;
+    double drumVelocity = m_x.get(1, 0) * kV * m_gearbox.motor.Kv / m_gearbox.reduction;
     var appliedVoltage = m_u.get(0, 0);
-    return m_gearbox.getCurrent(motorVelocity, appliedVoltage)
-        * Math.signum(appliedVoltage);
+    return m_gearbox.getCurrent(drumVelocity, appliedVoltage) * Math.signum(appliedVoltage);
   }
 
   /**

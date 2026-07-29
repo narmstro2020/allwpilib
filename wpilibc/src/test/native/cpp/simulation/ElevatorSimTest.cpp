@@ -118,3 +118,28 @@ TEST(ElevatorSimTest, CurrentDraw) {
   // Current draw should start at 60 A and decrease as the back-EMF catches up
   EXPECT_TRUE(0_A < sim.GetCurrentDraw() && sim.GetCurrentDraw() < 60_A);
 }
+
+TEST(ElevatorSimTest, CurrentDrawAtSpeed) {
+  // At a standstill the reduction cancels out of the back-EMF term, so this
+  // uses a non-zero velocity and a reduction other than one to pin down the
+  // conversion from carriage velocity to motor velocity.
+  constexpr double kReduction = 10.0;
+  constexpr auto kDrumRadius = 0.05_m;
+  constexpr auto kVelocity = 1_mps;
+  constexpr auto kVoltage = 12_V;
+
+  wpi::math::Gearbox gearbox{wpi::math::DCMotor::kNEO, 2, kReduction};
+  wpi::sim::ElevatorSim sim{gearbox, 8_kg, kDrumRadius, 0_m, 10_m, false, 0_m};
+
+  sim.SetState(1_m, kVelocity);
+  sim.SetInput(wpi::math::Vectord<1>{kVoltage.value()});
+
+  // v = r*w at the drum, and the motors turn `kReduction` times faster than it.
+  wpi::units::radians_per_second_t motorVelocity{
+      (kVelocity / kDrumRadius).value() * kReduction};
+  auto expected =
+      gearbox.numMotors *
+      wpi::math::DCMotor::kNEO.Current(motorVelocity, kVoltage).value();
+
+  EXPECT_NEAR(expected, sim.GetCurrentDraw().value(), 1e-6);
+}

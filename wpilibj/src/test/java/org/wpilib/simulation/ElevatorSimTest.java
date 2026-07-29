@@ -150,4 +150,27 @@ class ElevatorSimTest {
     // Current draw should start at 60 A and decrease as the back-EMF catches up
     assertTrue(0.0 < sim.getCurrentDraw() && sim.getCurrentDraw() < 60.0);
   }
+
+  @Test
+  void testCurrentDrawAtSpeed() {
+    // At a standstill the reduction cancels out of the back-EMF term, so this uses a
+    // non-zero velocity and a reduction other than one to pin down the conversion from
+    // carriage velocity to motor velocity.
+    double reduction = 10.0;
+    double drumRadius = 0.05;
+    double velocity = 1.0;
+    double voltage = 12.0;
+
+    var gearbox = new Gearbox(DCMotor.kNEO, 2, reduction);
+    var sim = new ElevatorSim(gearbox, 8.0, drumRadius, 0.0, 10.0, false, 0.0);
+
+    sim.setState(1.0, velocity);
+    sim.setInput(voltage);
+
+    // v = r·ω at the drum, and the motors turn `reduction` times faster than the drum.
+    double motorVelocity = velocity / drumRadius * reduction;
+    double expected = gearbox.numMotors * DCMotor.kNEO.getCurrent(motorVelocity, voltage);
+
+    assertEquals(expected, sim.getCurrentDraw(), 1e-6);
+  }
 }
