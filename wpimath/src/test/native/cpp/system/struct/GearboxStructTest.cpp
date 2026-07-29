@@ -8,10 +8,12 @@
 
 using namespace wpi::math;
 
-using StructType = wpi::util::Struct<wpi::math::Gearbox>;
+namespace {
 
-inline constexpr Gearbox kExpectedData =
-    Gearbox{DCMotor{1.91_V, 19.1_Nm, 1.74_A, 2.29_A, 2.2_rad_per_s}, 3, 8.45};
+using StructType = wpi::util::Struct<wpi::math::Gearbox>;
+const Gearbox kExpectedData{
+    DCMotor{1.91_V, 19.1_Nm, 1.74_A, 2.29_A, 2.2_rad_per_s}, 3, 8.45};
+}  // namespace
 
 TEST(GearboxStructTest, Roundtrip) {
   uint8_t buffer[StructType::GetSize()];
